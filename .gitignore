@@ -1,0 +1,13 @@
+*.idml
+*.indb
+*.indd
+*.log
+*.pdf
+*.pyc
+.DS_Store
+.venv/
+Thumbs.db
+__pycache__/
+build/
+build_plan.json
+evals/.snapshot.json
