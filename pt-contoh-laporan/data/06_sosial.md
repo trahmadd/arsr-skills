@@ -14,7 +14,7 @@ judul.en: Employment
 isi.id: Pendekatan manajemen untuk topik ketenagakerjaan (perekrutan, perputaran dan tunjangan karyawan): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Tunjangan karyawan tetap juga diberikan kepada karyawan kontrak.
 isi.en: Management approach for employment (hiring, turnover and employee benefits): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. Benefits for full-time employees are also provided to contract employees.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Karyawan baru | New hires | Orang | Persons | 14 | 15 | 16 |
   | Karyawan keluar | Leavers | Orang | Persons | 8 | 7 | 8 |
   | Karyawan akhir tahun | Employees at year end | Orang | Persons | 118 | 126 | 134 |
@@ -24,7 +24,7 @@ tabel:
   | Kembali bekerja | Returned to work | Orang | Persons | 6 | 7 | 8 |
 cek: r4 = r2 / r3 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -34,7 +34,7 @@ judul.en: Diversity and non-discrimination
 isi.id: Pendekatan manajemen untuk topik keberagaman dan nondiskriminasi (keberagaman, kesetaraan dan nondiskriminasi): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for diversity and non-discrimination (diversity, equality and non-discrimination): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total karyawan | Total employees | Orang | Persons | 118 | 126 | 134 |
   | Karyawan perempuan | Women employees | Orang | Persons | 34 | 38 | 42 |
   | Karyawan laki-laki | Men employees | Orang | Persons | 84 | 88 | 92 |
@@ -46,7 +46,7 @@ tabel:
   | Insiden diskriminasi | Discrimination incidents | Kasus | Cases | 0 | 0 | 0 |
 cek: r1 = r2 + r3; r4 = r2 / r1 * 100; r7 = r5 / r6 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -56,7 +56,7 @@ judul.en: Occupational health and safety
 isi.id: Pendekatan manajemen untuk topik keselamatan dan kesehatan kerja (keselamatan dan kesehatan kerja seluruh pekerja): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Sistem manajemen K3 mencakup identifikasi bahaya, investigasi insiden, layanan kesehatan kerja, dan pelatihan.
 isi.en: Management approach for occupational health and safety (occupational health and safety of all workers): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. The OHS management system covers hazard identification, incident investigation, occupational health services and training.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Karyawan | Employees | Orang | Persons | 118 | 126 | 134 |
   | Pekerja bukan karyawan | Non-employee workers | Orang | Persons | 54 | 59 | 65 |
   | Pekerja tercakup sistem K3 | Workers covered by the OHS system | Orang | Persons | 172 | 185 | 199 |
@@ -67,7 +67,7 @@ tabel:
   | Penyakit akibat kerja | Work-related ill health | Kasus | Cases | 0 | 1 | 0 |
 cek: r3 = r1 + r2; r7 = r4 + r5 + r6
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -77,7 +77,7 @@ judul.en: Training and education
 isi.id: Pendekatan manajemen untuk topik pelatihan dan pendidikan (pelatihan dan pengembangan kemampuan karyawan): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for training and education (employee training and skills development): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total jam pelatihan | Total training hours | Jam | Hours | 4.130 | 4.620 | 5.360 |
   | Jumlah karyawan | Number of employees | Orang | Persons | 118 | 126 | 134 |
   | Rata-rata jam pelatihan | Average training hours | Jam per karyawan | Hours per employee | 35,0 | 36,7 | 40,0 |
@@ -85,7 +85,7 @@ tabel:
   | Program peningkatan keterampilan | Skills upgrading programs | Program | Programs | 12 | 14 | 17 |
 cek: r3 = r1 / r2
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -95,13 +95,13 @@ judul.en: Labor rights
 isi.id: Pendekatan manajemen untuk topik hak tenaga kerja (upah layak serta pencegahan tenaga kerja anak dan paksa): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for labor rights (fair wages and prevention of child and forced labor): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Operasi berisiko tenaga kerja anak | Operations at risk of child labor | Operasi | Operations | 0 | 0 | 0 |
   | Operasi berisiko kerja paksa | Operations at risk of forced labor | Operasi | Operations | 0 | 0 | 0 |
   | Rasio upah entry-level terhadap UMR | Entry-level wage to minimum wage ratio | Kali | Times | 1,18 | 1,21 | 1,24 |
   | Manajemen senior dari masyarakat lokal | Senior management from the local community | % | % | 62,5 | 64,3 | 66,7 |
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -111,7 +111,7 @@ judul.en: Local communities
 isi.id: Pendekatan manajemen untuk topik masyarakat lokal (pelibatan dan dampak terhadap masyarakat sekitar): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for local communities (engagement with and impact on local communities): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Program pengembangan masyarakat | Community development programs | Program | Programs | 6 | 7 | 9 |
   | Penerima manfaat | Beneficiaries | Orang | Persons | 1.850 | 2.240 | 2.960 |
   | Anggaran TJSL | CSR budget | Juta Rp | IDR million | 2.100 | 2.400 | 2.900 |
@@ -121,7 +121,7 @@ tabel:
   | Operasi dengan dampak negatif signifikan | Operations with significant negative impact | Operasi | Operations | 0 | 0 | 0 |
 cek: r6 = r4 / r5 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -129,13 +129,13 @@ dummy: ya
 judul.id: Pengaduan Masyarakat
 judul.en: Community Complaints
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Pengaduan diterima | Complaints received | Kasus | Cases | 9 | 7 | 6 |
   | Pengaduan diselesaikan | Complaints resolved | Kasus | Cases | 8 | 7 | 6 |
   | Persentase diselesaikan | Share resolved | % | % | 88,9 | 100,0 | 100,0 |
 cek: r3 = r2 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 

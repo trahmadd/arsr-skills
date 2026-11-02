@@ -3,16 +3,16 @@
 ## HAL 13 | tipe: divider
 judul.id: Profil Perusahaan
 judul.en: Company Profile
-subjudul.id: Mengenal Nusantara Contoh
-subjudul.en: Getting to know Nusantara Contoh
+subjudul.id: Mengenal Contoh Laporan
+subjudul.en: Getting to know Contoh Laporan
 sumber: dummy
 dummy: ya
 
 ## HAL 14 | tipe: teks | gri: 2-1 | ojk: C.2 | seojk: LT.5
 judul.id: Identitas Perusahaan
 judul.en: Company Identity
-isi.id: PT Nusantara Contoh Energi Tbk (kode saham NCET) didirikan pada tahun 1998 dan berkedudukan di Jl. Contoh No. 1, Jakarta 10000. Bentuk badan hukum adalah perseroan terbatas terbuka.
-isi.en: PT Nusantara Contoh Energi Tbk (ticker NCET) was established in 1998 and is domiciled at Contoh Street No. 1, Jakarta 10000. Its legal form is a public limited company.
+isi.id: PT Contoh Laporan (kode saham CLP) didirikan pada tahun 2012 dan berkedudukan di Jl. Contoh No. 1, Jakarta 10000. Bentuk badan hukum adalah perseroan terbatas terbuka.
+isi.en: PT Contoh Laporan (ticker CLP) was established in 2012 and is domiciled at Contoh Street No. 1, Jakarta 10000. Its legal form is a public limited company.
 sumber: dummy
 dummy: ya
 
@@ -28,7 +28,7 @@ dummy: ya
 judul.id: Skala Usaha
 judul.en: Scale of the Organization
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total aset | Total assets | Miliar Rp | IDR billion | 2.350,6 | 2.478,3 | 2.615,9 |
   | Jumlah karyawan | Number of employees | Orang | Persons | 118 | 126 | 134 |
   | Karyawan perempuan | Women employees | Orang | Persons | 34 | 38 | 42 |
@@ -36,7 +36,7 @@ tabel:
   | Lokasi operasi | Operating sites | Lokasi | Sites | 7 | 8 | 9 |
 cek: r2 = r3 + r4
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -62,8 +62,8 @@ dummy: ya
 ## HAL 19 | tipe: teks | gri: 2-4 | ojk: C.6
 judul.id: Perubahan Signifikan
 judul.en: Significant Changes
-isi.id: Pada tahun 2025 perusahaan menambah satu lokasi operasi dan memperbarui metode perhitungan intensitas energi. Angka pembanding tahun sebelumnya telah disajikan kembali sesuai metode baru.
-isi.en: In 2025 the company added one operating site and updated its energy intensity method. Prior-year comparatives have been restated using the new method.
+isi.id: Pada tahun 2026 perusahaan menambah satu lokasi operasi dan memperbarui metode perhitungan intensitas energi. Angka pembanding tahun sebelumnya telah disajikan kembali sesuai metode baru.
+isi.en: In 2026 the company added one operating site and updated its energy intensity method. Prior-year comparatives have been restated using the new method.
 sumber: dummy
 dummy: ya
 
@@ -79,13 +79,13 @@ dummy: ya
 judul.id: Pekerja Bukan Karyawan
 judul.en: Workers Who Are Not Employees
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Tenaga alih daya | Outsourced workers | Orang | Persons | 46 | 50 | 54 |
   | Peserta magang | Interns | Orang | Persons | 8 | 9 | 11 |
   | Total pekerja bukan karyawan | Total non-employee workers | Orang | Persons | 54 | 59 | 65 |
 cek: r3 = r1 + r2
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 

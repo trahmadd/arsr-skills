@@ -710,8 +710,9 @@ class Gen(object):
         return res
 
 
-def generate(template_dir, out_dir):
-    cfg_src = os.path.join(template_dir, 'data', '00_config.md')
+def generate(template_dir, out_dir, config=None):
+    """Write a dummy project. config = path of a 00_config.md to use instead of the template's (year, names, palette)."""
+    cfg_src = config or os.path.join(template_dir, 'data', '00_config.md')
     cfg = mdparse.parse_config(cfg_src)
     g = Gen(cfg)
     g.plan()

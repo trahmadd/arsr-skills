@@ -14,7 +14,7 @@ judul.en: Energy
 isi.id: Pendekatan manajemen untuk topik energi (konsumsi dan efisiensi energi): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Kebutuhan energi produk dan layanan dikurangi melalui layanan efisiensi bagi pelanggan.
 isi.en: Management approach for energy (energy consumption and efficiency): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. Energy requirements of products and services are reduced through efficiency services for customers.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Bahan bakar tak terbarukan | Non-renewable fuel | GJ | GJ | 78.200 | 80.150 | 79.480 |
   | Listrik dibeli | Purchased electricity | GJ | GJ | 31.450 | 32.020 | 33.110 |
   | Energi terbarukan | Renewable energy | GJ | GJ | 4.100 | 6.350 | 9.870 |
@@ -25,7 +25,7 @@ tabel:
   | Pengurangan konsumsi energi | Reduction in energy consumption | GJ | GJ | 1.250 | 2.100 | 3.050 |
 cek: r4 = r1 + r2 + r3; r6 = r4 / r5
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -35,7 +35,7 @@ judul.en: Water and effluents
 isi.id: Pendekatan manajemen untuk topik air dan efluen (pengambilan, pembuangan dan konsumsi air): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for water and effluents (water withdrawal, discharge and consumption): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total pengambilan air | Total water withdrawal | Ribu m3 | Thousand m3 | 278,3 | 271,7 | 265,4 |
   | Air permukaan | Surface water | Ribu m3 | Thousand m3 | 182,4 | 176,9 | 171,3 |
   | Air tanah | Groundwater | Ribu m3 | Thousand m3 | 64,2 | 61,8 | 59,5 |
@@ -44,7 +44,7 @@ tabel:
   | Konsumsi air | Water consumption | Ribu m3 | Thousand m3 | 70,3 | 68,3 | 65,7 |
 cek: r1 = r2 + r3 + r4; r6 = r1 - r5
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -54,7 +54,7 @@ judul.en: Emissions
 isi.id: Pendekatan manajemen untuk topik emisi (emisi gas rumah kaca dan emisi udara lain): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Zat perusak ozon tidak digunakan sehingga 305-6 tidak dilaporkan.
 isi.en: Management approach for emissions (greenhouse gas and other air emissions): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. Ozone-depleting substances are not used, so 305-6 is not reported.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Emisi Cakupan 1 | Scope 1 emissions | tCO2e | tCO2e | 41.200 | 41.900 | 40.700 |
   | Emisi Cakupan 2 | Scope 2 emissions | tCO2e | tCO2e | 18.600 | 19.100 | 17.400 |
   | Emisi Cakupan 3 | Scope 3 emissions | tCO2e | tCO2e | 9.800 | 10.400 | 10.900 |
@@ -66,7 +66,7 @@ tabel:
   | Sulfur oksida (SOx) | Sulfur oxides (SOx) | Ton | Tonnes | 18,7 | 18,0 | 17,2 |
 cek: r4 = r1 + r2 + r3; r6 = r4 / r5
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -76,7 +76,7 @@ judul.en: Waste
 isi.id: Pendekatan manajemen untuk topik limbah (timbulan, pengalihan dan pembuangan limbah): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Tidak terdapat tumpahan signifikan pada tahun pelaporan.
 isi.en: Management approach for waste (waste generation, diversion and disposal): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. There were no significant spills in the reporting year.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total limbah dihasilkan | Total waste generated | Ton | Tonnes | 1.426 | 1.396 | 1.364 |
   | Limbah non-B3 | Non-hazardous waste | Ton | Tonnes | 1.240 | 1.215 | 1.190 |
   | Limbah B3 | Hazardous waste | Ton | Tonnes | 186 | 181 | 174 |
@@ -84,7 +84,7 @@ tabel:
   | Limbah ke pembuangan akhir | Waste directed to disposal | Ton | Tonnes | 614 | 551 | 461 |
 cek: r1 = r2 + r3; r1 = r4 + r5
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -92,14 +92,14 @@ dummy: ya
 judul.id: Biaya Lingkungan Hidup
 judul.en: Environmental Costs
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Pengelolaan limbah | Waste management | Miliar Rp | IDR billion | 3,2 | 3,5 | 3,9 |
   | Pemantauan lingkungan | Environmental monitoring | Miliar Rp | IDR billion | 1,1 | 1,2 | 1,4 |
   | Program penghijauan | Greening programs | Miliar Rp | IDR billion | 0,8 | 1,0 | 1,3 |
   | Total biaya lingkungan | Total environmental costs | Miliar Rp | IDR billion | 5,1 | 5,7 | 6,6 |
 cek: r4 = r1 + r2 + r3
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -109,7 +109,7 @@ judul.en: Materials
 isi.id: Pendekatan manajemen untuk topik material (penggunaan bahan dan bahan input daur ulang): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for materials (materials used and recycled inputs): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total bahan digunakan | Total materials used | Ton | Tonnes | 6.060 | 6.090 | 6.110 |
   | Bahan baru | Virgin materials | Ton | Tonnes | 5.420 | 5.310 | 5.180 |
   | Bahan input daur ulang | Recycled input materials | Ton | Tonnes | 640 | 780 | 930 |
@@ -117,7 +117,7 @@ tabel:
   | Produk dan kemasan direklamasi | Reclaimed products and packaging | Ton | Tonnes | 120 | 150 | 205 |
 cek: r1 = r2 + r3; r4 = r3 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -133,13 +133,13 @@ dummy: ya
 judul.id: Pengaduan Lingkungan Hidup
 judul.en: Environmental Complaints
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Pengaduan diterima | Complaints received | Kasus | Cases | 5 | 4 | 3 |
   | Pengaduan diselesaikan | Complaints resolved | Kasus | Cases | 4 | 4 | 3 |
   | Persentase diselesaikan | Share resolved | % | % | 80,0 | 100,0 | 100,0 |
 cek: r3 = r2 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 

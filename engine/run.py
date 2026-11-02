@@ -3,7 +3,7 @@
 
   python engine/run.py validate <project_dir> [--log-dir DIR]
   python engine/run.py plan <project_dir>
-  python engine/run.py dummy <out_dir> [--template DIR]
+  python engine/run.py dummy <out_dir> [--config my_00_config.md] [--template DIR]
 
 validate is read-only: it writes one log file (default: your Desktop) and nothing else.
 Exit code 0 = no errors, 1 = errors, 2 = bad usage.
@@ -32,6 +32,7 @@ def main(argv=None):
     d = sub.add_parser('dummy', help='create a dummy project from the template config')
     d.add_argument('out')
     d.add_argument('--template', default=os.path.join(HERE, '..', 'templates', 'dummy-company'))
+    d.add_argument('--config', default=None, help='use this 00_config.md (company, year, palette) instead of the template one')
     d.add_argument('--force', action='store_true', help='overwrite an existing out folder')
     a = ap.parse_args(argv)
     if a.cmd == 'validate':
@@ -63,7 +64,7 @@ def main(argv=None):
                 print('%s exists; use --force to overwrite' % a.out)
                 return 2
             shutil.rmtree(a.out)
-        n = dummy.generate(a.template, a.out)
+        n = dummy.generate(a.template, a.out, a.config)
         print('wrote %d chapter files + config to %s' % (n, os.path.join(a.out, 'data')))
         return 0
     ap.print_help()

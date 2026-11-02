@@ -1,11 +1,11 @@
 # BAB 01 | id: Pendahuluan | en: Introduction
 
 ## HAL 1 | tipe: sampul
-judul.id: Laporan Tahunan dan Keberlanjutan 2025
-judul.en: Annual and Sustainability Report 2025
-subjudul.id: Tumbuh Bersama, Berkelanjutan
-subjudul.en: Growing Together, Sustainably
-tahun: 2025
+judul.id: Laporan Tahunan dan Keberlanjutan 2026
+judul.en: Annual and Sustainability Report 2026
+subjudul.id: Bertumbuh & Berkembang untuk masa depan yang lebih baik
+subjudul.en: Growth & Expansion for a better future
+tahun: 2026
 sumber: dummy
 dummy: ya
 
@@ -18,10 +18,10 @@ dummy: ya
 ## HAL 3 | tipe: teks | gri: 2-2, 2-3, 2-4, 3-1 | seojk: LT.8
 judul.id: Tentang Laporan
 judul.en: About This Report
-isi.id: Laporan ini mencakup periode 1 Januari sampai 31 Desember 2025 dan diterbitkan setiap tahun. Cakupan meliputi seluruh entitas dalam laporan keuangan konsolidasian Nusantara Contoh. Laporan disusun sesuai (in accordance with) GRI Standards. Penyajian kembali informasi dicatat pada tabel terkait.
+isi.id: Laporan ini mencakup periode 1 Januari sampai 31 Desember 2026 dan diterbitkan setiap tahun. Cakupan meliputi seluruh entitas dalam laporan keuangan konsolidasian Contoh Laporan. Laporan disusun sesuai (in accordance with) GRI Standards. Penyajian kembali informasi dicatat pada tabel terkait.
 
   Proses penentuan topik material melibatkan manajemen dan perwakilan pemangku kepentingan. Standar PSPK 1 dan 2 (efektif 1 Januari 2027) disebutkan sebagai informasi.
-isi.en: This report covers 1 January to 31 December 2025 and is published annually. It covers all entities in the consolidated financial statements of Nusantara Contoh. It is prepared in accordance with the GRI Standards. Restatements are noted on the relevant tables.
+isi.en: This report covers 1 January to 31 December 2026 and is published annually. It covers all entities in the consolidated financial statements of Contoh Laporan. It is prepared in accordance with the GRI Standards. Restatements are noted on the relevant tables.
 
   The material topic process involved management and stakeholder representatives. PSPK 1 and 2 (effective 1 January 2027) are mentioned for information only.
 sumber: dummy
@@ -79,8 +79,8 @@ dummy: ya
 ## HAL 9 | tipe: teks | gri: 2-22, 2-23 | ojk: A.1 | seojk: LT.8
 judul.id: Strategi Keberlanjutan
 judul.en: Sustainability Strategy
-isi.id: Strategi keberlanjutan Nusantara Contoh bertumpu pada tiga pilar: pertumbuhan ekonomi yang bertanggung jawab, efisiensi penggunaan sumber daya, dan pengembangan manusia serta masyarakat sekitar. Setiap pilar memiliki target tahunan yang ditinjau Direksi.
-isi.en: The sustainability strategy of Nusantara Contoh rests on three pillars: responsible economic growth, resource efficiency, and the development of people and surrounding communities. Each pillar has annual targets reviewed by the Board of Directors.
+isi.id: Strategi keberlanjutan Contoh Laporan bertumpu pada tiga pilar: pertumbuhan ekonomi yang bertanggung jawab, efisiensi penggunaan sumber daya, dan pengembangan manusia serta masyarakat sekitar. Setiap pilar memiliki target tahunan yang ditinjau Direksi.
+isi.en: The sustainability strategy of Contoh Laporan rests on three pillars: responsible economic growth, resource efficiency, and the development of people and surrounding communities. Each pillar has annual targets reviewed by the Board of Directors.
 sumber: dummy
 dummy: ya
 
@@ -112,7 +112,7 @@ dummy: ya
 judul.id: Ikhtisar Data Keuangan Penting
 judul.en: Key Financial Highlights
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Pendapatan | Revenue | Miliar Rp | IDR billion | 1.450,2 | 1.523,8 | 1.610,5 |
   | Beban usaha | Operating expenses | Miliar Rp | IDR billion | 1.180,4 | 1.235,1 | 1.297,7 |
   | Laba usaha | Operating profit | Miliar Rp | IDR billion | 269,8 | 288,7 | 312,8 |
@@ -122,7 +122,7 @@ tabel:
   | Ekuitas | Equity | Miliar Rp | IDR billion | 1.164,4 | 1.236,6 | 1.327,5 |
 cek: r3 = r1 - r2; r4 = r3 * 0.8; r7 = r5 - r6
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -130,12 +130,12 @@ dummy: ya
 judul.id: Informasi Saham
 judul.en: Share Information
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Harga penutupan | Closing price | Rp per saham | IDR per share | 1.250 | 1.340 | 1.425 |
   | Saham beredar | Shares outstanding | Juta lembar | Million shares | 2.400 | 2.400 | 2.400 |
   | Kapitalisasi pasar | Market capitalization | Miliar Rp | IDR billion | 3.000,0 | 3.216,0 | 3.420,0 |
 cek: r3 = r1 * r2 / 1000
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya

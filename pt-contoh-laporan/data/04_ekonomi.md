@@ -14,7 +14,7 @@ judul.en: Economic performance
 isi.id: Pendekatan manajemen untuk topik kinerja ekonomi (nilai ekonomi yang dihasilkan dan didistribusikan): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait. Risiko dan peluang finansial terkait iklim dinilai setiap tahun dan dilaporkan kepada Direksi.
 isi.en: Management approach for economic performance (economic value generated and distributed): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders. Financial risks and opportunities related to climate change are assessed yearly and reported to the Board of Directors.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Nilai ekonomi dihasilkan | Economic value generated | Miliar Rp | IDR billion | 1.450,2 | 1.523,8 | 1.610,5 |
   | Biaya kepada pemasok | Payments to suppliers | Miliar Rp | IDR billion | 894,0 | 933,2 | 979,5 |
   | Gaji dan tunjangan | Wages and benefits | Miliar Rp | IDR billion | 286,4 | 301,9 | 318,2 |
@@ -27,7 +27,7 @@ tabel:
   | Bantuan finansial pemerintah | Financial assistance from government | Miliar Rp | IDR billion | 0,0 | 0,0 | 0,0 |
 cek: r7 = r2 + r3 + r4 + r5 + r6; r8 = r1 - r7
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -37,13 +37,13 @@ judul.en: Local procurement
 isi.id: Pendekatan manajemen untuk topik pengadaan lokal (belanja kepada pemasok di sekitar wilayah operasi): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for local procurement (spending on suppliers near operating sites): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Total belanja pemasok | Total supplier spending | Miliar Rp | IDR billion | 894,0 | 933,2 | 979,5 |
   | Belanja pemasok lokal | Local supplier spending | Miliar Rp | IDR billion | 536,0 | 579,5 | 688,2 |
   | Proporsi pemasok lokal | Share of local suppliers | % | % | 60,0 | 62,1 | 70,3 |
 cek: r3 = r2 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -51,7 +51,7 @@ dummy: ya
 judul.id: Target dan Kinerja Ekonomi
 judul.en: Economic Targets and Performance
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Target pendapatan | Revenue target | Miliar Rp | IDR billion | 1.420,0 | 1.500,0 | 1.600,0 |
   | Realisasi pendapatan | Revenue actual | Miliar Rp | IDR billion | 1.450,2 | 1.523,8 | 1.610,5 |
   | Pencapaian pendapatan | Revenue achievement | % | % | 102,1 | 101,6 | 100,7 |
@@ -60,7 +60,7 @@ tabel:
   | Pencapaian laba bersih | Net profit achievement | % | % | 105,3 | 102,7 | 102,1 |
 cek: r3 = r2 / r1 * 100; r6 = r5 / r4 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -78,7 +78,7 @@ judul.en: Product and Service Safety
 isi.id: Pendekatan manajemen untuk topik keselamatan produk (keselamatan dan kualitas produk serta layanan): perusahaan menetapkan kebijakan dan target tahunan, menunjuk penanggung jawab, memantau dampak aktual dan potensial, serta meninjau efektivitas tindakan bersama pemangku kepentingan terkait.
 isi.en: Management approach for product safety (product and service safety and quality): the company sets policies and annual targets, assigns an accountable owner, monitors actual and potential impacts, and reviews the effectiveness of actions with relevant stakeholders.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Kategori produk dan layanan | Product and service categories | Kategori | Categories | 10 | 10 | 12 |
   | Kategori yang dievaluasi | Categories assessed | Kategori | Categories | 10 | 10 | 12 |
   | Persentase dievaluasi | Share assessed | % | % | 100,0 | 100,0 | 100,0 |
@@ -86,7 +86,7 @@ tabel:
   | Produk ditarik kembali | Products recalled | Unit | Units | 0 | 0 | 0 |
 cek: r3 = r2 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 

@@ -228,6 +228,19 @@ class TestEvals(Base):
         self.assertEqual(eval_check.check('E3', o3), 1)
 
 
+class TestDummyConfig(Base):
+    def test_config_year_flows_into_tables(self):
+        cfg = rd(os.path.join(TEMPLATE, 'data', '00_config.md'))
+        cfg = cfg.replace('tahun-laporan: 2025', 'tahun-laporan: 2026').replace('Nusantara Contoh', 'Contoh Laporan')
+        f = os.path.join(self.tmp, 'cfg2026.md')
+        wr(f, cfg)
+        out = os.path.join(self.tmp, 'p2026')
+        dummy.generate(TEMPLATE, out, f)
+        rep = validate.validate(out)
+        self.assertEqual(rep.count('ERROR'), 0, rep.render()[:600])
+        self.assertFalse(rep.has('NUM-04'), 'year columns must follow tahun-laporan')
+
+
 class TestNegative(Base):
     def test_unknown_gri_code(self):
         self.assertRule(self.mutate('02_profil.md', 'gri: 2-1 |', 'gri: 2-1, 999-9 |'), 'GRI-01')

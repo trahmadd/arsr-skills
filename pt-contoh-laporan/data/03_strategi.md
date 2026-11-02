@@ -22,14 +22,14 @@ judul.en: Governance Body Composition
 isi.id: Anggota dicalonkan dan dipilih melalui Rapat Umum Pemegang Saham. Ketua Dewan Komisaris tidak merangkap jabatan eksekutif.
 isi.en: Members are nominated and selected at the General Meeting of Shareholders. The Chair of the Board of Commissioners holds no executive role.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Anggota Dewan Komisaris | Board of Commissioners members | Orang | Persons | 4 | 4 | 5 |
   | Anggota Direksi | Board of Directors members | Orang | Persons | 5 | 5 | 5 |
   | Total anggota | Total members | Orang | Persons | 9 | 9 | 10 |
   | Komisaris independen | Independent commissioners | Orang | Persons | 2 | 2 | 2 |
 cek: r3 = r1 + r2
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -47,11 +47,11 @@ judul.en: Remuneration Policy
 isi.id: Remunerasi ditetapkan berdasarkan kinerja dan pencapaian target keberlanjutan, melalui usulan Komite Nominasi dan Remunerasi.
 isi.en: Remuneration is set on performance and the achievement of sustainability targets, upon recommendation of the Nomination and Remuneration Committee.
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Rasio kompensasi tertinggi terhadap median | Highest-paid to median compensation ratio | Kali | Times | 6,8 | 6,5 | 6,4 |
   | Rasio kenaikan kompensasi | Compensation increase ratio | Kali | Times | 1,2 | 1,1 | 1,0 |
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 
@@ -79,8 +79,8 @@ dummy: ya
 ## HAL 32 | tipe: teks | gri: 2-16, 2-26, 2-27 | ojk: E.5
 judul.id: Permasalahan dan Kepatuhan
 judul.en: Issues and Compliance
-isi.id: Hal kritis dikomunikasikan kepada Dewan Komisaris melalui saluran pelaporan pelanggaran. Pada tahun 2025 tidak terdapat sanksi material atas ketidakpatuhan terhadap hukum dan peraturan.
-isi.en: Critical concerns are communicated to the Board of Commissioners through the whistleblowing channel. In 2025 there were no material sanctions for non-compliance with laws and regulations.
+isi.id: Hal kritis dikomunikasikan kepada Dewan Komisaris melalui saluran pelaporan pelanggaran. Pada tahun 2026 tidak terdapat sanksi material atas ketidakpatuhan terhadap hukum dan peraturan.
+isi.en: Critical concerns are communicated to the Board of Commissioners through the whistleblowing channel. In 2026 there were no material sanctions for non-compliance with laws and regulations.
 sumber: dummy
 dummy: ya
 
@@ -96,13 +96,13 @@ dummy: ya
 judul.id: Perjanjian Kerja Bersama
 judul.en: Collective Bargaining Agreements
 tabel:
-  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2023 | 2024 | 2025 |
+  | id: Deskripsi | en: Description | id: Satuan | en: Unit | 2024 | 2025 | 2026 |
   | Jumlah karyawan | Number of employees | Orang | Persons | 118 | 126 | 134 |
   | Karyawan tercakup PKB | Employees covered by CBA | Orang | Persons | 94 | 101 | 112 |
   | Persentase tercakup | Coverage | % | % | 79,7 | 80,2 | 83,6 |
 cek: r3 = r2 / r1 * 100
 berjalan: 1
-periode: 2023, 2024, 2025
+periode: 2024, 2025, 2026
 sumber: dummy
 dummy: ya
 

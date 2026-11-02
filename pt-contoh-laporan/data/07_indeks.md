@@ -87,10 +87,10 @@ sumber: dummy
 dummy: ya
 
 ## HAL 80 | tipe: sampul
-judul.id: PT Nusantara Contoh Energi Tbk
-judul.en: PT Nusantara Contoh Energi Tbk
-subjudul.id: Tumbuh Bersama, Berkelanjutan
-subjudul.en: Growing Together, Sustainably
-tahun: 2025
+judul.id: PT Contoh Laporan
+judul.en: PT Contoh Laporan
+subjudul.id: Bertumbuh & Berkembang untuk masa depan yang lebih baik
+subjudul.en: Growth & Expansion for a better future
+tahun: 2026
 sumber: dummy
 dummy: ya
