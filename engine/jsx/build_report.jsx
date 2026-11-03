@@ -240,13 +240,13 @@
         });
         // Numbering list (one named list, three levels)
         safe('numbering', function () {
-            doc.lists.add({ name: 'penomoran' });
-            each([['penomoran.l1', NumberingStyle.ARABIC, 1], ['penomoran.l2', NumberingStyle.LOWERCASE_LETTERS, 2], ['penomoran.l3', NumberingStyle.LOWERCASE_ROMAN, 3]], function (r) {
+            doc.numberingLists.add({ name: 'penomoran' });
+            each([['penomoran.l1', NumberingStyle.ARABIC, 1], ['penomoran.l2', NumberingStyle.LOWER_LETTERS, 2], ['penomoran.l3', NumberingStyle.LOWER_ROMAN, 3]], function (r) {
                 var s = PS[r[0]];
                 s.bulletsAndNumberingListType = ListType.NUMBERED_LIST;
                 s.numberingFormat = r[1];
                 s.numberingLevel = r[2];
-                s.numberingList = doc.lists.itemByName('penomoran');
+                s.appliedNumberingList = doc.numberingLists.itemByName('penomoran');
             });
         });
         for (var n in PS) {
@@ -306,7 +306,7 @@
     function setupMaster() {
         safe('master', function () {
             var ms = doc.masterSpreads[0];
-            ms.name = 'A-Master';
+            ms.namePrefix = 'A';
             each([0, 1], function (i) {
                 var pg = ms.pages[i];
                 var mp = pg.marginPreferences;
@@ -578,7 +578,7 @@
         if (plan.schema !== 1) { log('ERROR', 'plan', 'unsupported plan schema ' + plan.schema); return; }
         var oldUnits = app.scriptPreferences.measurementUnit, oldLevel = app.scriptPreferences.userInteractionLevel;
         app.scriptPreferences.measurementUnit = MeasurementUnits.MILLIMETERS;
-        app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERACT_WITH_USER;
+        app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERACT;
         try {
             M = plan.doc.margins; W = plan.doc.width; H = plan.doc.height; TEXTW = W - M.inside - M.outside;
             doc = app.documents.add();

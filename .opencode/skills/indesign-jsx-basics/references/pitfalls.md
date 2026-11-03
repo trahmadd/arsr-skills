@@ -13,5 +13,10 @@
 | Rounded corners fail | Property names differ by version | Log WARN, keep square header (spec allows) |
 | Script runs but nothing happens | Ran from the wrong menu or no plan found | Run `python engine/run.py plan <project>` first; check `%APPDATA%\ARSR\last_plan.txt` |
 | Slow build | Per-cell formatting on huge tables | Acceptable; do not add `redraw` hacks. Keep `userInteractionLevel` NEVER_INTERACT |
+| `UserInteractionLevels.NEVER_INTERACT_WITH_USER` not found | InDesign enum is `NEVER_INTERACT` | Use `UserInteractionLevels.NEVER_INTERACT` |
+| `doc.lists` not found | Numbering lists collection is `numberingLists` | Use `doc.numberingLists.add` and `doc.numberingLists.itemByName` |
+| `paragraphStyle.numberingList` not found | Property is `appliedNumberingList` | Use `style.appliedNumberingList = doc.numberingLists.itemByName(...)` |
+| `masterSpread.name` read-only | Master spread name is set via `namePrefix` | Use `ms.namePrefix = 'A'` (or remove) |
+| `NumberingStyle.LOWERCASE_LETTERS` / `LOWERCASE_ROMAN` not found | InDesign uses `LOWER_LETTERS` / `LOWER_ROMAN` | Use `NumberingStyle.LOWER_LETTERS` and `LOWER_ROMAN` |
 
 Items marked UNVERIFIED in the log came from a mock only; confirm them in real InDesign and record the result here.

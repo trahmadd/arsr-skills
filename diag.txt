@@ -1,0 +1,11 @@
+doc.lists: n/a
+created doc
+has lists: false
+has numberingLists: true
+lists type: undefined
+numberingLists type: object
+ps has numberingList: false
+ps has appliedNumberingList: true
+ps has numberingFormat: true
+ist props: otfHistorical, otfStylisticSets, otfStylisticAlternate, tabList, bulletsAndNumberingListType, appliedNumberingList, eventListeners
+
