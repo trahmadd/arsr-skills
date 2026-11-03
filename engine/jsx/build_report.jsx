@@ -654,6 +654,11 @@
                 }
             });
             log('INFO', 'done', 'pages built ' + total);
+            safe('save', function () {
+                var f = new File(planFile.parent.fsName + '/report.indd');
+                doc.save(f);
+                log('INFO', 'saved', f.fsName);
+            });
         } finally {
             app.scriptPreferences.measurementUnit = oldUnits;
             app.scriptPreferences.userInteractionLevel = oldLevel;
