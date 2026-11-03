@@ -39,6 +39,23 @@
             f.close();
         }
     }
+    // No alert(): a modal dialog blocks automation and made agents re-run the build. Status goes to files.
+    function writeDone() {
+        var f = new File(Folder.desktop.fsName + '/ARSR_Build_Done.txt');
+        f.encoding = 'UTF-8';
+        if (f.open('w')) {
+            f.write((NERR ? 'DONE WITH ERRORS' : 'DONE OK') + ' | ERROR ' + NERR + ' | WARN ' + NWARN + '\nBuild finished. Do not run the build again; read ARSR_Build_Log.txt.\n');
+            f.close();
+        }
+    }
+    function alreadyBuilt() {
+        var i, d;
+        for (i = 0; i < app.documents.length; i++) {
+            d = app.documents[i];
+            try { if (d.extractLabel('ARSR_BUILD') === 'yes') { return d.name; } } catch (e) { }
+        }
+        return null;
+    }
     function findPlan() {
         if ($.global.ARSR_PLAN_PATH) { return new File($.global.ARSR_PLAN_PATH); }
         var ptr = new File(Folder.userData.fsName + '/ARSR/last_plan.txt');
@@ -93,6 +110,11 @@
         if (!SW[p[0]]) { log('ERROR', 'color', 'unknown swatch ' + p[0]); return null; }
         return p.length > 1 ? tint(p[0], Number(p[1])) : SW[p[0]];
     }
+    // Numbers written to these properties are read in the SCRIPT unit (mm here), so a 34 pt title became 34 mm.
+    // Pass them as "N pt" strings. Everything else in this script is millimetres.
+    var PT_KEYS = ['pointSize', 'leading', 'ruleBelowLineWeight', 'ruleBelowOffset', 'underlineWeight', 'underlineOffset',
+        'topEdgeStrokeWeight', 'bottomEdgeStrokeWeight', 'leftEdgeStrokeWeight', 'rightEdgeStrokeWeight',
+        'topBorderStrokeWeight', 'bottomBorderStrokeWeight', 'leftBorderStrokeWeight', 'rightBorderStrokeWeight'];
     function applyProps(obj, props, where) {
         var k, v;
         for (k in props) {
@@ -100,6 +122,7 @@
                 v = props[k];
                 try {
                     if (typeof v === 'string' && v.charAt(0) === '$') { v = color(v.substr(1)); }
+                    else if (typeof v === 'number' && has(PT_KEYS, k)) { v = v + ' pt'; }
                     obj[k] = v;
                 } catch (e) {
                     log('WARN', where, 'property ' + k + ' not applied: ' + e.message);
@@ -298,10 +321,11 @@
         });
     }
     function pageArea(page) {
-        var b = page.bounds;   // y1, x1, y2, x2
+        // Ruler origin is PAGE_ORIGIN, so every coordinate is relative to the page the item sits on.
+        // page.bounds returns spread-based numbers for right-hand pages and pushed items off the page: never use it.
         var right = (page.side !== PageSideOptions.LEFT_HAND);
-        var x1 = b[1] + (right ? M.inside : M.outside);
-        return { x0: b[1], y0: b[0], x1: x1, x2: x1 + TEXTW, top: b[0] + M.top, bottom: b[2] - M.bottom, right: right, pw: b[3] - b[1] };
+        var x1 = right ? M.inside : M.outside;
+        return { x0: 0, y0: 0, x1: x1, x2: x1 + TEXTW, top: M.top, bottom: H - M.bottom, right: right, pw: W };
     }
     function setupMaster() {
         safe('master', function () {
@@ -458,7 +482,7 @@
     // ------------------------------------------------------------------ page templates
     function cover(page, d, back) {
         page.appliedMaster = NothingEnum.NOTHING;
-        var b = page.bounds;
+        var b = [0, 0, H, W];
         var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
         r.fillColor = color('Primary'); r.strokeWeight = 0;
         var a = pageArea(page);
@@ -473,7 +497,7 @@
         var s = rect(page, b[1] + 22, b[0] + 80, b[1] + 62, b[0] + 81.5, 'Accent 1', L['Latar']);
     }
     function divider(page, d) {
-        var b = page.bounds, a = pageArea(page);
+        var b = [0, 0, H, W], a = pageArea(page);
         var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
         r.fillColor = color('Primary'); r.strokeWeight = 0;
         var no = String(d.chapter); if (no.length < 2) { no = '0' + no; }
@@ -530,7 +554,7 @@
         if (a.bottom - y > 40) { placeholder(page, a.x1, y, a.x2, a.bottom); }
     }
     function quotePage(page, d, a) {
-        var b = page.bounds;
+        var b = [0, 0, H, W];
         var y = a.top + 40;
         rect(page, a.x1, y, a.x2, y + 140, 'Primary', L['Latar']);
         var f = tf(page, a, a.x1 + 10, y + 12, a.x2 - 10, y + 128);
@@ -571,6 +595,11 @@
 
     // ------------------------------------------------------------------ run
     function run() {
+        var prior = alreadyBuilt();
+        if (prior && !$.global.ARSR_FORCE) {
+            log('WARN', 'build', 'document ' + prior + ' is already built in this InDesign session; nothing done. Close it, or set $.global.ARSR_FORCE = true, to build again.');
+            return;
+        }
         var planFile = findPlan();
         if (!planFile || !planFile.exists) { log('ERROR', 'plan', 'no build_plan.json (run: python engine/run.py plan <project>)'); return; }
         plan = eval('(' + readText(planFile) + ')');
@@ -582,6 +611,7 @@
         try {
             M = plan.doc.margins; W = plan.doc.width; H = plan.doc.height; TEXTW = W - M.inside - M.outside;
             doc = app.documents.add();
+            doc.insertLabel('ARSR_BUILD', 'yes');
             var dp = doc.documentPreferences;
             dp.pageWidth = W; dp.pageHeight = H; dp.facingPages = plan.doc.facing; dp.pagesPerDocument = plan.doc.pageCount;
             dp.documentBleedUniformSize = true; dp.documentBleedTopOffset = plan.doc.bleed;
@@ -632,5 +662,5 @@
 
     try { run(); } catch (e) { log('ERROR', 'fatal', String(e.message || e) + ' (line ' + e.line + ')'); }
     writeLog();
-    try { alert('ARSR build: ERROR ' + NERR + ', WARN ' + NWARN + '\nLog: Desktop/ARSR_Build_Log.txt'); } catch (e2) { }
+    writeDone();
 })();

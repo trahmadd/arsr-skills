@@ -32,6 +32,9 @@ This file and all skills are written in English. Report data is bilingual (Indon
 | `tools/jsx_lint.py` | Static ES3 linter for JSX (`python tools/jsx_lint.py engine/jsx`) | done |
 | `evals/` | Test prompts for free models | planned R5 |
 
+## Build rule
+Run `build_report.jsx` once per change. It shows no dialog; read the Desktop logs. Never loop on it.
+
 ## Commands (Python 3.8+, standard library only)
 
 ```

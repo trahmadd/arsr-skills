@@ -3,7 +3,8 @@
 // usage: node tests/mock_indesign.js <script.jsx> <plan.json> <out_dir>
 var fs = require('fs'), vm = require('vm'), path = require('path');
 var script = process.argv[2], planPath = process.argv[3], outDir = process.argv[4];
-var stats = { adds: {}, contents: [], pageItems: {} };
+var stats = { adds: {}, contents: [], pageItems: {}, outOfPage: [], badUnits: [] };
+var PT = ['pointSize', 'leading', 'ruleBelowLineWeight', 'underlineWeight', 'bottomEdgeStrokeWeight', 'topEdgeStrokeWeight'];
 var enumNames = {};
 (fs.readFileSync(script, 'utf8').match(/\b[A-Z][A-Za-z]+(?=\.[A-Z][A-Z_0-9]+)/g) || []).forEach(function (n) { enumNames[n] = 1; });
 
@@ -18,14 +19,18 @@ function node(p, extra) {
       if (k === 'isValid') { return true; }
       if (k === 'overflows') { return false; }
       if (k === 'name') { return p; }
-      if (k === 'bounds') { return [0, 0, 297, 210]; }
-      if (k === 'side') { return 'RIGHT_HAND'; }
+      if (k === 'bounds') { var m = /pages\[(\d+)\]$/.exec(p); return (m && Number(m[1]) % 2 === 1) ? [0, 210, 297, 420] : [0, 0, 297, 210]; }
+      if (k === 'side') { var m2 = /^doc\.pages\[(\d+)\]$/.exec(p); return (m2 && Number(m2[1]) % 2 === 1) ? 'LEFT_HAND' : (/masterSpreads/.test(p) && /pages\[0\]$/.test(p) ? 'LEFT_HAND' : 'RIGHT_HAND'); }
       if (k === 'toString' || k === 'valueOf') { return function () { return p; }; }
       if (/^\d+$/.test(k)) { return node(p + '[' + k + ']'); }
       if (k === 'add') {
         return function (props) {
           stats.adds[p] = (stats.adds[p] || 0) + 1;
           if (props && props.contents !== undefined) { stats.contents.push(String(props.contents)); }
+          if (props && props.geometricBounds) {
+            var g = props.geometricBounds;   // y1, x1, y2, x2 relative to the page (ruler origin = page)
+            if (g[1] < -5 || g[3] > 215 || g[0] < -5 || g[2] > 302) { stats.outOfPage.push(p + ' ' + g.join(',')); }
+          }
           return node(p + '.add');
         };
       }
@@ -35,6 +40,7 @@ function node(p, extra) {
     },
     set: function (t, k, v) {
       if (k === 'contents' && typeof v === 'string') { stats.contents.push(v); }
+      if (PT.indexOf(k) >= 0 && typeof v === 'number') { stats.badUnits.push(p + '.' + k + '=' + v); }
       store[k] = v;
       return true;
     },
@@ -61,7 +67,8 @@ Object.keys(enumNames).forEach(function (n) {
 });
 sb.app = node('app');
 var doc = node('doc');
-sb.app.documents = { add: function () { return doc; } };
+sb.app.documents = { length: 1, 0: doc, add: function () { return doc; } };
+sb.app.activeDocument = doc;
 fs.mkdirSync(outDir, { recursive: true });
 vm.createContext(sb);
 vm.runInContext(fs.readFileSync(script, 'utf8').replace(/^#target.*$/m, ''), sb, { filename: script });
@@ -76,4 +83,4 @@ stats.contents.forEach(function (s) {
     if (st.length) { bad.push(para.slice(0, 80)); }
   });
 });
-fs.writeFileSync(path.join(outDir, 'mock_stats.json'), JSON.stringify({ adds: stats.adds, strings: stats.contents.length, unbalanced: bad }));
+fs.writeFileSync(path.join(outDir, 'mock_stats.json'), JSON.stringify({ adds: stats.adds, strings: stats.contents.length, unbalanced: bad, outOfPage: stats.outOfPage, badUnits: stats.badUnits }));

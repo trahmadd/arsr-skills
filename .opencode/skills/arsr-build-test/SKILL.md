@@ -15,6 +15,12 @@ description: Build the InDesign document from a validated project and test it - 
 
 Optional automation from Python on Windows: `win32com.client.Dispatch('InDesign.Application')` then `DoScript(path, 1246973031)` (ScriptLanguage.JAVASCRIPT). Not required; manual run is the baseline.
 
+## Run the build ONCE
+- The build creates ONE new document. Run it a single time, then read `Desktop/ARSR_Build_Done.txt` (first line DONE OK or DONE WITH ERRORS) and `Desktop/ARSR_Build_Log.txt`.
+- There is no popup. Never run again to "verify" or "wait for the popup"; a second run is skipped while a built document is open.
+- Rerun only after you changed code or data because of an ERROR in the log. Close the old document first (or `$.global.ARSR_FORCE = true`).
+- Look at the result in InDesign (Pages panel and a few spreads) before declaring success: items must sit inside their pages and text must be normal size.
+
 ## Developing without InDesign
 - `python tools/jsx_lint.py engine/jsx` (ES3 rules).
 - `python -m unittest discover -s tests` runs a Node mock of the DOM (`tests/mock_indesign.js`) that executes the build flow. It proves logic and tag balance, not InDesign API names.

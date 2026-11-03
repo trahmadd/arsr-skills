@@ -118,5 +118,4 @@
     var f = new File(Folder.desktop.fsName + '/ARSR_QA_Log.txt');
     f.encoding = 'UTF-8';
     if (f.open('w')) { f.write('ERROR ' + NERR + ' | WARN ' + NWARN + ' | qa_document.jsx\n' + LOG.join('\n') + '\n'); f.close(); }
-    try { alert('ARSR QA: ERROR ' + NERR + ', WARN ' + NWARN + '\nLog: Desktop/ARSR_QA_Log.txt'); } catch (e2) { }
 })();

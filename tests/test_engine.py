@@ -191,6 +191,10 @@ class TestJsx(Base):
         self.assertTrue(first.startswith('ERROR 0 |'), first)
         st = json.load(open(os.path.join(o, 'mock_stats.json')))
         self.assertEqual(st['unbalanced'], [])
+        self.assertEqual(st['outOfPage'], [], 'items placed outside their page')
+        self.assertEqual(st['badUnits'], [], 'point sizes must be written as "N pt" strings')
+        self.assertTrue(os.path.exists(os.path.join(o, 'ARSR_Build_Done.txt')))
+        self.assertNotIn('alert', rd(os.path.join(ROOT, 'engine', 'jsx', 'build_report.jsx')).replace('No alert()', ''))
         tables = sum(v for k, v in st['adds'].items() if k.endswith('.tables'))
         self.assertEqual(tables, sum(1 for d in pl['pages'] if d.get('table')))
         # QA script: the mock has no real content, so only check that the script itself does not crash
