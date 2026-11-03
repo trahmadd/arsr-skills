@@ -13,9 +13,47 @@ from . import mdparse, regrules, validate
 
 SCHEMA = 1
 # Rows one index page can hold (index row heights are fixed in build_report.jsx).
-ROWS_PER_PAGE = {'indeks-gri': 26, 'indeks-ojk': 26, 'indeks-seojk': 24}
-TOC_MM = {1: 9.0, 2: 6.0}   # entry heights used by build_report.jsx
-TOC_PAGE_MM = 450.0         # two columns of the daftar-isi page
+# Index pages are packed by ESTIMATED row height (mm) so that real InDesign tables do not overflow.
+INDEX_MIN_ROW = 6.0        # minimum row height on index tables
+INDEX_BUDGET_MM = 200.0    # table height available per index page (frame less header row, with safety)
+LINE_MM = 3.2              # one 7.5 pt line at 9 pt leading (paragraf.tabel.indeks)
+CHAR_MM = 1.45             # average character width at 7.5 pt, conservative
+ROW_PAD_MM = 3.0           # space before + cell insets + slop
+
+
+def est_lines(text, width_mm):
+    cpl = max(1, int((width_mm - 4.0) / CHAR_MM))
+    n = 0
+    for part in str(text).split('\n'):
+        n += max(1, -(-len(part) // cpl))
+    return n
+
+
+def est_row_mm(cells, cols, widths, min_row):
+    mx = 1
+    for c, col, w in zip(cells, cols, widths):
+        if col['kind'] == 'text' and isinstance(c, (list, tuple)):
+            n = est_lines(c[0] + ' ' + c[1], w) if col.get('inline') else est_lines(c[0], w) + est_lines(c[1], w)
+        else:
+            n = est_lines(c, w)
+        mx = max(mx, n)
+    return max(min_row, mx * LINE_MM + ROW_PAD_MM)
+
+
+def pack_rows(rows, cols, widths, min_row):
+    pages, cur, used = [], [], 0.0
+    for r in rows:
+        h = est_row_mm(r, cols, widths, min_row)
+        if cur and used + h > INDEX_BUDGET_MM:
+            pages.append(cur)
+            cur, used = [], 0.0
+        cur.append(r)
+        used += h
+    if cur:
+        pages.append(cur)
+    return pages
+TOC_MM = {1: 11.0, 2: 6.0}   # entry heights used by build_report.jsx
+TOC_PAGE_MM = 455.0         # two columns of the daftar-isi page
 SKIP_TOC_TYPES = ('sampul', 'divider', 'daftar-isi', 'indeks-gri', 'indeks-ojk', 'indeks-seojk', 'kutipan')
 
 
@@ -76,7 +114,19 @@ def table_struct(page):
 
 
 def pages_text(nums):
-    return ', '.join(str(n) for n in sorted(set(nums)))
+    """1, 2, 3, 5 -> '1-3, 5' (runs of three or more become ranges)."""
+    ns = sorted(set(nums))
+    out, i = [], 0
+    while i < len(ns):
+        j = i
+        while j + 1 < len(ns) and ns[j + 1] == ns[j] + 1:
+            j += 1
+        if j - i >= 2:
+            out.append('%d-%d' % (ns[i], ns[j]))
+        else:
+            out.extend(str(x) for x in ns[i:j + 1])
+        i = j + 1
+    return ', '.join(out)
 
 
 def build(project_dir, repo_root=None):
@@ -159,21 +209,21 @@ def build(project_dir, repo_root=None):
     for tok in sorted(set(cited['gri']) | set(omit_gri), key=gri_sort):
         if tok.startswith('GRI '):
             srow = cat.gri_std.get(tok, {})
-            std, title = tok + ': ' + srow.get('title', ''), 'Standard (all disclosures)'
+            std, title = tok, 'Standard (all disclosures): ' + srow.get('title', '')
         else:
             drow = cat.gri_dis.get(tok, {})
             sname = drow.get('standard', '')
-            std = '%s: %s' % (sname, cat.gri_std.get(sname, {}).get('title', ''))
+            std = sname
             title = '%s %s' % (tok, drow.get('title', ''))
         om = omit_gri.get(tok)
-        reason = [om['alasan.id'], om['alasan.en']] if om else ['-', '-']
+        reason = [om['alasan.id'], om['alasan.en']] if om else '-'
         gri_rows.append({'std': std, 'disclosure': title, 'pages': pages_text(cited['gri'].get(tok, [])) or '-', 'reason': reason, 'code': tok})
     ojk_rows = []
     for code in sorted(cat.ojk, key=regrules.natkey):
         om = omit_ojk.get(code)
         ojk_rows.append({'code': code, 'id': cat.ojk[code]['title.id'], 'en': cat.ojk[code]['title.en'],
                          'pages': pages_text(cited['ojk'].get(code, [])) or '-',
-                         'note': [om['alasan.id'], om['alasan.en']] if om else ['-', '-']})
+                         'note': [om['alasan.id'], om['alasan.en']] if om else '-'})
     seojk_rows = []
     for code in sorted(cat.seojk, key=regrules.natkey):
         seojk_rows.append({'code': code, 'id': cat.seojk[code]['title.id'], 'en': cat.seojk[code]['title.en'],
@@ -188,22 +238,24 @@ def build(project_dir, repo_root=None):
         idx = [d for d in pages if d['tipe'] == tipe]
         if not idx:
             continue
-        cap = ROWS_PER_PAGE[tipe]
-        if len(rows) > cap * len(idx):
-            errors.append('PLN-01 | %s: %d rows but %d page(s) hold only %d; add index pages (multiple of 4 total)' % (
-                tipe, len(rows), len(idx), cap * len(idx)))
+        cols_n = None
         cols = {
             'indeks-gri': [{'kind': 'ref', 'id': 'Standar GRI', 'en': 'GRI Standard'}, {'kind': 'ref', 'id': 'Pengungkapan', 'en': 'Disclosure'},
                            {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}, {'kind': 'text', 'id': 'Alasan penghilangan', 'en': 'Reason for omission'}],
-            'indeks-ojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item'},
+            'indeks-ojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item', 'inline': True},
                            {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}, {'kind': 'text', 'id': 'Keterangan', 'en': 'Note'}],
-            'indeks-seojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item'},
+            'indeks-seojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item', 'inline': True},
                              {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}],
         }[tipe]
-        widths = {'indeks-gri': [48, 62, 18, 42], 'indeks-ojk': [16, 88, 18, 48], 'indeks-seojk': [16, 116, 38]}[tipe]
+        widths = {'indeks-gri': [16, 100, 24, 30], 'indeks-ojk': [14, 100, 18, 38], 'indeks-seojk': [16, 116, 38]}[tipe]
+        packed = pack_rows([make(r) for r in rows], cols, widths, INDEX_MIN_ROW)
+        if len(packed) > len(idx):
+            errors.append('PLN-01 | %s: needs %d page(s) by estimated row height but the data has %d; add %d index page(s) (total pages stay a multiple of 4)' % (
+                tipe, len(packed), len(idx), len(packed) - len(idx)))
         for k, d in enumerate(idx):
-            chunk = rows[k * cap:(k + 1) * cap]
-            d['table'] = {'cols': cols, 'rows': [make(r) for r in chunk], 'berjalan': 0, 'widths': widths, 'dummyRows': [], 'index': True}
+            chunk = packed[k] if k < len(packed) else []
+            d['table'] = {'cols': cols, 'rows': chunk, 'berjalan': 0, 'widths': widths, 'dummyRows': [], 'index': True, 'minRow': INDEX_MIN_ROW}
+
     # ---- TOC split across daftar-isi pages by height
     tp = [d for d in pages if d['tipe'] == 'daftar-isi']
     if tp:

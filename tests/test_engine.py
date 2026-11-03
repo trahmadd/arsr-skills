@@ -194,6 +194,7 @@ class TestJsx(Base):
         self.assertEqual(st['outOfPage'], [], 'items placed outside their page')
         self.assertEqual(st['badUnits'], [], 'point sizes must be written as "N pt" strings')
         self.assertTrue(os.path.exists(os.path.join(o, 'ARSR_Build_Done.txt')))
+        self.assertIn('forced line break = char code', rd(os.path.join(o, 'ARSR_Build_Log.txt')))
         self.assertNotIn('alert', rd(os.path.join(ROOT, 'engine', 'jsx', 'build_report.jsx')).replace('No alert()', ''))
         tables = sum(v for k, v in st['adds'].items() if k.endswith('.tables'))
         self.assertEqual(tables, sum(1 for d in pl['pages'] if d.get('table')))

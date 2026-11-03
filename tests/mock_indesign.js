@@ -15,12 +15,12 @@ function node(p, extra) {
     get: function (t, k) {
       if (typeof k === 'symbol') { return undefined; }
       if (k in store) { return store[k]; }
-      if (k === 'length') { return 3; }
+      if (k === 'length') { return /\.paragraphs$/.test(p) ? 1 : (/\.lines$/.test(p) ? 2 : 3); }
       if (k === 'isValid') { return true; }
       if (k === 'overflows') { return false; }
       if (k === 'name') { return p; }
       if (k === 'bounds') { var m = /pages\[(\d+)\]$/.exec(p); return (m && Number(m[1]) % 2 === 1) ? [0, 210, 297, 420] : [0, 0, 297, 210]; }
-      if (k === 'side') { var m2 = /^doc\.pages\[(\d+)\]$/.exec(p); return (m2 && Number(m2[1]) % 2 === 1) ? 'LEFT_HAND' : (/masterSpreads/.test(p) && /pages\[0\]$/.test(p) ? 'LEFT_HAND' : 'RIGHT_HAND'); }
+      if (k === 'side') { var m2 = /^doc\.pages\[(\d+)\]$/.exec(p); return (m2 && Number(m2[1]) % 2 === 1) ? 'PageSideOptions.LEFT_HAND' : (/masterSpreads/.test(p) && /pages\[0\]$/.test(p) ? 'PageSideOptions.LEFT_HAND' : 'PageSideOptions.RIGHT_HAND'); }
       if (k === 'toString' || k === 'valueOf') { return function () { return p; }; }
       if (/^\d+$/.test(k)) { return node(p + '[' + k + ']'); }
       if (k === 'add') {
@@ -30,6 +30,8 @@ function node(p, extra) {
           if (props && props.geometricBounds) {
             var g = props.geometricBounds;   // y1, x1, y2, x2 relative to the page (ruler origin = page)
             if (g[1] < -5 || g[3] > 215 || g[0] < -5 || g[2] > 302) { stats.outOfPage.push(p + ' ' + g.join(',')); }
+            var pm = /^doc\.pages\[(\d+)\]\./.exec(p);   // bleed must not cross the spine: right pages start at x>=0, left pages end at x<=210
+            if (pm && ((Number(pm[1]) % 2 === 0 && g[1] < 0) || (Number(pm[1]) % 2 === 1 && g[3] > 210))) { stats.outOfPage.push('spine ' + p + ' ' + g.join(',')); }
           }
           return node(p + '.add');
         };
@@ -48,7 +50,7 @@ function node(p, extra) {
   });
 }
 function MockFile(p) {
-  this.fsName = p; this.exists = fs.existsSync(p); this.encoding = '';
+  this.fsName = p; this.exists = fs.existsSync(p); this.encoding = ''; this.parent = { fsName: path.dirname(p) };
   this._mode = null; this._buf = [];
 }
 MockFile.prototype.open = function (m) { this._mode = m; return m === 'w' ? true : this.exists; };

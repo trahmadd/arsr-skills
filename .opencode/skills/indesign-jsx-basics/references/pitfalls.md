@@ -21,5 +21,8 @@
 | Fonts look ~3x too big, text overset everywhere (hundreds of preflight errors) | Numbers written to `pointSize`, `leading`, stroke weights are read in the script unit (mm) | Write them as `"34 pt"` strings (`PT_KEYS` in `applyProps`) |
 | Items on right-hand pages sit outside the page | `page.bounds` returns spread-based numbers; with ruler origin PAGE_ORIGIN coordinates are page-relative | Use 0..W, 0..H; never add `page.bounds` to coordinates |
 | Build runs again and again, new Untitled-N documents | `alert()` blocks automation and the agent re-runs the script | No `alert()`; read `ARSR_Build_Done.txt` / `ARSR_Build_Log.txt`; the script skips if a built document is open |
+| ID and EN text on one line | `String.fromCharCode(8232)` is not a forced line break when written to `contents` | `probeBreak()` tests `'\n'`, U+2028, U+000B on a temp frame and keeps the one that gives 2 lines in 1 paragraph |
+| Colored cover/divider bleeds into the neighbouring page | Bleed rectangle extended past the spine | Use `bleedRect(page, fill)`: bleed only on outer sides |
+| Index table overflows its frame | Fixed rows-per-page guess | `plan.py` packs index rows by estimated height (`pack_rows`); PLN-01 says how many pages are needed |
 
 Items marked UNVERIFIED in the log came from a mock only; confirm them in real InDesign and record the result here.

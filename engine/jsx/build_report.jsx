@@ -9,7 +9,7 @@
 (function () {
     var VERSION = '0.1.0';
     var HIGHLIGHT_DUMMY = true;      // wrap dummy text in <dum>...</dum>
-    var BR = String.fromCharCode(8232);   // forced line break (Shift+Enter)
+    var BR = '\n';   // forced line break (Shift+Enter); probeBreak() picks the character that really breaks a line
     var TAB = '\t';
     var LOG = [];
     var NERR = 0, NWARN = 0;
@@ -66,6 +66,21 @@
             log('WARN', 'plan', 'pointer file points to a missing plan: ' + p);
         }
         return File.openDialog('Select build_plan.json');
+    }
+    function probeBreak(d) {
+        var cands = ['\n', String.fromCharCode(8232), String.fromCharCode(11)], i, t, ok;
+        for (i = 0; i < cands.length; i++) {
+            ok = false;
+            try {
+                t = d.pages[0].textFrames.add({ geometricBounds: [0, 0, 20, 120] });
+                t.contents = 'a' + cands[i] + 'b';
+                ok = (t.paragraphs.length === 1 && t.lines.length === 2);
+                t.remove();
+            } catch (e) { ok = false; try { t.remove(); } catch (e2) { } }
+            if (ok) { log('INFO', 'break', 'forced line break = char code ' + cands[i].charCodeAt(0)); return cands[i]; }
+        }
+        log('ERROR', 'break', 'no character produced a forced line break; ID and EN will share one line');
+        return '\n';
     }
     function paraJoin(parts) { return parts.join('\r'); }
     function biText(idText, enText, tagEn) {
@@ -233,6 +248,7 @@
         mkPS(T, 'paragraf.tabel', { leading: 11, leftIndent: 2, rightIndent: 2, spaceBefore: 1 });
         mkPS(T, 'paragraf.tabel.angka', { justification: Justification.RIGHT_ALIGN, rightIndent: 4 }, 'paragraf.tabel');
         mkPS(T, 'paragraf.tabel.periode', { pointSize: 12, leading: 14, fontStyle: 'Bold', fillColor: '$Terang', justification: Justification.CENTER_ALIGN }, 'paragraf.tabel');
+        mkPS(T, 'paragraf.tabel.indeks', { pointSize: 7.5, leading: 9, spaceBefore: 0.5 }, 'paragraf.tabel');
         mkPS(T, 'judul.tabel', { fontStyle: 'Bold', pointSize: 9, leading: 12, spaceAfter: 2 });
         mkPS(O, 'toc.bab', { fontStyle: 'Bold', pointSize: 9, leading: 11, spaceBefore: 3 });
         mkPS(O, 'toc.sub', { pointSize: 7.5, leading: 8.5, leftIndent: 4 });
@@ -387,6 +403,12 @@
             }
         }
     }
+    function bleedRect(page, fill) {
+        var right = (page.side !== PageSideOptions.LEFT_HAND), bl = plan.doc.bleed;
+        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [-bl, right ? 0 : -bl, H + bl, right ? W + bl : W] });
+        r.fillColor = color(fill); r.strokeWeight = 0;
+        return r;
+    }
     function placeholder(page, x1, y1, x2, y2) { return rect(page, x1, y1, x2, y2, 'Primary@10', L['Latar']); }
 
     // ------------------------------------------------------------------ tables
@@ -441,20 +463,21 @@
                 (function (ii, jj) {
                     safe('table p' + pageNo + ' r' + ii + 'c' + jj, function () {
                         var v = t.rows[ii][jj], cl = tb.rows[ii + 1].cells[jj], isRun = (t.berjalan && jj === ncol - 1);
-                        if (t.cols[jj].kind === 'text') {
-                            txt = dum(biText(v[0], v[1]), isDum);
+                        var baseStyle = PS[t.index ? 'paragraf.tabel.indeks' : 'paragraf.tabel'];
+                        if (t.cols[jj].kind === 'text' && typeof v !== 'string') {
+                            txt = dum(t.cols[jj].inline ? (v[0] + ' <e>' + v[1] + '</e>') : biText(v[0], v[1]), isDum);
                             cl.contents = txt;
-                            cl.paragraphs.everyItem().appliedParagraphStyle = PS['paragraf.tabel'];
+                            cl.paragraphs.everyItem().appliedParagraphStyle = baseStyle;
                         } else {
                             txt = String(v);
                             cl.contents = dum(txt, isDum);
-                            cl.paragraphs.everyItem().appliedParagraphStyle = NUMRX.test(txt) && t.cols[jj].kind === 'num' ? PS['paragraf.tabel.angka'] : PS['paragraf.tabel'];
+                            cl.paragraphs.everyItem().appliedParagraphStyle = NUMRX.test(txt) && t.cols[jj].kind === 'num' ? PS['paragraf.tabel.angka'] : baseStyle;
                         }
                         cl.appliedCellStyle = CELLS[(last ? 'sel.akhir' : 'sel.isi') + (isRun ? '.berjalan' : '')];
                     });
                 })(i, j);
             }
-            safe('row height', function () { tb.rows[i + 1].minimumHeight = 11.8; });
+            safe('row height', function () { tb.rows[i + 1].minimumHeight = (t.minRow || 11.8); });
         }
         if (frame.overflows) { log('WARN', 'table p' + pageNo, 'table overflows its frame'); }
         // header decor: rounded rectangles behind period columns
@@ -483,8 +506,7 @@
     function cover(page, d, back) {
         page.appliedMaster = NothingEnum.NOTHING;
         var b = [0, 0, H, W];
-        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
-        r.fillColor = color('Primary'); r.strokeWeight = 0;
+        bleedRect(page, 'Primary');
         var a = pageArea(page);
         var f = tf(page, a, b[1] + 22, b[0] + 90, b[3] - 22, b[0] + 190);
         f.contents = '<jid>' + d.title.id + '</jid>' + BR + '<jen>' + d.title.en + '</jen>';
@@ -498,8 +520,7 @@
     }
     function divider(page, d) {
         var b = [0, 0, H, W], a = pageArea(page);
-        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
-        r.fillColor = color('Primary'); r.strokeWeight = 0;
+        bleedRect(page, 'Primary');
         var no = String(d.chapter); if (no.length < 2) { no = '0' + no; }
         var f1 = tf(page, a, a.x1, a.top + 20, a.x2, a.top + 90);
         f1.contents = no; f1.parentStory.paragraphs.everyItem().appliedParagraphStyle = PS['divider.nomor'];
@@ -612,6 +633,7 @@
             M = plan.doc.margins; W = plan.doc.width; H = plan.doc.height; TEXTW = W - M.inside - M.outside;
             doc = app.documents.add();
             doc.insertLabel('ARSR_BUILD', 'yes');
+            BR = probeBreak(doc);
             var dp = doc.documentPreferences;
             dp.pageWidth = W; dp.pageHeight = H; dp.facingPages = plan.doc.facing; dp.pagesPerDocument = plan.doc.pageCount;
             dp.documentBleedUniformSize = true; dp.documentBleedTopOffset = plan.doc.bleed;

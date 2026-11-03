@@ -1,0 +1,309 @@
+diff --git a/.opencode/skills/indesign-jsx-basics/references/pitfalls.md b/.opencode/skills/indesign-jsx-basics/references/pitfalls.md
+index 38ffb11..c9ecb4a 100644
+--- a/.opencode/skills/indesign-jsx-basics/references/pitfalls.md
++++ b/.opencode/skills/indesign-jsx-basics/references/pitfalls.md
+@@ -21,5 +21,8 @@
+ | Fonts look ~3x too big, text overset everywhere (hundreds of preflight errors) | Numbers written to `pointSize`, `leading`, stroke weights are read in the script unit (mm) | Write them as `"34 pt"` strings (`PT_KEYS` in `applyProps`) |
+ | Items on right-hand pages sit outside the page | `page.bounds` returns spread-based numbers; with ruler origin PAGE_ORIGIN coordinates are page-relative | Use 0..W, 0..H; never add `page.bounds` to coordinates |
+ | Build runs again and again, new Untitled-N documents | `alert()` blocks automation and the agent re-runs the script | No `alert()`; read `ARSR_Build_Done.txt` / `ARSR_Build_Log.txt`; the script skips if a built document is open |
++| ID and EN text on one line | `String.fromCharCode(8232)` is not a forced line break when written to `contents` | `probeBreak()` tests `'\n'`, U+2028, U+000B on a temp frame and keeps the one that gives 2 lines in 1 paragraph |
++| Colored cover/divider bleeds into the neighbouring page | Bleed rectangle extended past the spine | Use `bleedRect(page, fill)`: bleed only on outer sides |
++| Index table overflows its frame | Fixed rows-per-page guess | `plan.py` packs index rows by estimated height (`pack_rows`); PLN-01 says how many pages are needed |
+ 
+ Items marked UNVERIFIED in the log came from a mock only; confirm them in real InDesign and record the result here.
+diff --git a/engine/arsr/plan.py b/engine/arsr/plan.py
+index ea5c556..f723800 100644
+--- a/engine/arsr/plan.py
++++ b/engine/arsr/plan.py
+@@ -13,9 +13,47 @@ from . import mdparse, regrules, validate
+ 
+ SCHEMA = 1
+ # Rows one index page can hold (index row heights are fixed in build_report.jsx).
+-ROWS_PER_PAGE = {'indeks-gri': 26, 'indeks-ojk': 26, 'indeks-seojk': 24}
+-TOC_MM = {1: 9.0, 2: 6.0}   # entry heights used by build_report.jsx
+-TOC_PAGE_MM = 450.0         # two columns of the daftar-isi page
++# Index pages are packed by ESTIMATED row height (mm) so that real InDesign tables do not overflow.
++INDEX_MIN_ROW = 6.0        # minimum row height on index tables
++INDEX_BUDGET_MM = 200.0    # table height available per index page (frame less header row, with safety)
++LINE_MM = 3.2              # one 7.5 pt line at 9 pt leading (paragraf.tabel.indeks)
++CHAR_MM = 1.45             # average character width at 7.5 pt, conservative
++ROW_PAD_MM = 3.0           # space before + cell insets + slop
++
++
++def est_lines(text, width_mm):
++    cpl = max(1, int((width_mm - 4.0) / CHAR_MM))
++    n = 0
++    for part in str(text).split('\n'):
++        n += max(1, -(-len(part) // cpl))
++    return n
++
++
++def est_row_mm(cells, cols, widths, min_row):
++    mx = 1
++    for c, col, w in zip(cells, cols, widths):
++        if col['kind'] == 'text' and isinstance(c, (list, tuple)):
++            n = est_lines(c[0] + ' ' + c[1], w) if col.get('inline') else est_lines(c[0], w) + est_lines(c[1], w)
++        else:
++            n = est_lines(c, w)
++        mx = max(mx, n)
++    return max(min_row, mx * LINE_MM + ROW_PAD_MM)
++
++
++def pack_rows(rows, cols, widths, min_row):
++    pages, cur, used = [], [], 0.0
++    for r in rows:
++        h = est_row_mm(r, cols, widths, min_row)
++        if cur and used + h > INDEX_BUDGET_MM:
++            pages.append(cur)
++            cur, used = [], 0.0
++        cur.append(r)
++        used += h
++    if cur:
++        pages.append(cur)
++    return pages
++TOC_MM = {1: 11.0, 2: 6.0}   # entry heights used by build_report.jsx
++TOC_PAGE_MM = 455.0         # two columns of the daftar-isi page
+ SKIP_TOC_TYPES = ('sampul', 'divider', 'daftar-isi', 'indeks-gri', 'indeks-ojk', 'indeks-seojk', 'kutipan')
+ 
+ 
+@@ -76,7 +114,19 @@ def table_struct(page):
+ 
+ 
+ def pages_text(nums):
+-    return ', '.join(str(n) for n in sorted(set(nums)))
++    """1, 2, 3, 5 -> '1-3, 5' (runs of three or more become ranges)."""
++    ns = sorted(set(nums))
++    out, i = [], 0
++    while i < len(ns):
++        j = i
++        while j + 1 < len(ns) and ns[j + 1] == ns[j] + 1:
++            j += 1
++        if j - i >= 2:
++            out.append('%d-%d' % (ns[i], ns[j]))
++        else:
++            out.extend(str(x) for x in ns[i:j + 1])
++        i = j + 1
++    return ', '.join(out)
+ 
+ 
+ def build(project_dir, repo_root=None):
+@@ -159,21 +209,21 @@ def build(project_dir, repo_root=None):
+     for tok in sorted(set(cited['gri']) | set(omit_gri), key=gri_sort):
+         if tok.startswith('GRI '):
+             srow = cat.gri_std.get(tok, {})
+-            std, title = tok + ': ' + srow.get('title', ''), 'Standard (all disclosures)'
++            std, title = tok, 'Standard (all disclosures): ' + srow.get('title', '')
+         else:
+             drow = cat.gri_dis.get(tok, {})
+             sname = drow.get('standard', '')
+-            std = '%s: %s' % (sname, cat.gri_std.get(sname, {}).get('title', ''))
++            std = sname
+             title = '%s %s' % (tok, drow.get('title', ''))
+         om = omit_gri.get(tok)
+-        reason = [om['alasan.id'], om['alasan.en']] if om else ['-', '-']
++        reason = [om['alasan.id'], om['alasan.en']] if om else '-'
+         gri_rows.append({'std': std, 'disclosure': title, 'pages': pages_text(cited['gri'].get(tok, [])) or '-', 'reason': reason, 'code': tok})
+     ojk_rows = []
+     for code in sorted(cat.ojk, key=regrules.natkey):
+         om = omit_ojk.get(code)
+         ojk_rows.append({'code': code, 'id': cat.ojk[code]['title.id'], 'en': cat.ojk[code]['title.en'],
+                          'pages': pages_text(cited['ojk'].get(code, [])) or '-',
+-                         'note': [om['alasan.id'], om['alasan.en']] if om else ['-', '-']})
++                         'note': [om['alasan.id'], om['alasan.en']] if om else '-'})
+     seojk_rows = []
+     for code in sorted(cat.seojk, key=regrules.natkey):
+         seojk_rows.append({'code': code, 'id': cat.seojk[code]['title.id'], 'en': cat.seojk[code]['title.en'],
+@@ -188,22 +238,24 @@ def build(project_dir, repo_root=None):
+         idx = [d for d in pages if d['tipe'] == tipe]
+         if not idx:
+             continue
+-        cap = ROWS_PER_PAGE[tipe]
+-        if len(rows) > cap * len(idx):
+-            errors.append('PLN-01 | %s: %d rows but %d page(s) hold only %d; add index pages (multiple of 4 total)' % (
+-                tipe, len(rows), len(idx), cap * len(idx)))
++        cols_n = None
+         cols = {
+             'indeks-gri': [{'kind': 'ref', 'id': 'Standar GRI', 'en': 'GRI Standard'}, {'kind': 'ref', 'id': 'Pengungkapan', 'en': 'Disclosure'},
+                            {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}, {'kind': 'text', 'id': 'Alasan penghilangan', 'en': 'Reason for omission'}],
+-            'indeks-ojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item'},
++            'indeks-ojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item', 'inline': True},
+                            {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}, {'kind': 'text', 'id': 'Keterangan', 'en': 'Note'}],
+-            'indeks-seojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item'},
++            'indeks-seojk': [{'kind': 'ref', 'id': 'Kode', 'en': 'Code'}, {'kind': 'text', 'id': 'Butir', 'en': 'Item', 'inline': True},
+                              {'kind': 'ref', 'id': 'Halaman', 'en': 'Page'}],
+         }[tipe]
+-        widths = {'indeks-gri': [48, 62, 18, 42], 'indeks-ojk': [16, 88, 18, 48], 'indeks-seojk': [16, 116, 38]}[tipe]
++        widths = {'indeks-gri': [16, 100, 24, 30], 'indeks-ojk': [14, 100, 18, 38], 'indeks-seojk': [16, 116, 38]}[tipe]
++        packed = pack_rows([make(r) for r in rows], cols, widths, INDEX_MIN_ROW)
++        if len(packed) > len(idx):
++            errors.append('PLN-01 | %s: needs %d page(s) by estimated row height but the data has %d; add %d index page(s) (total pages stay a multiple of 4)' % (
++                tipe, len(packed), len(idx), len(packed) - len(idx)))
+         for k, d in enumerate(idx):
+-            chunk = rows[k * cap:(k + 1) * cap]
+-            d['table'] = {'cols': cols, 'rows': [make(r) for r in chunk], 'berjalan': 0, 'widths': widths, 'dummyRows': [], 'index': True}
++            chunk = packed[k] if k < len(packed) else []
++            d['table'] = {'cols': cols, 'rows': chunk, 'berjalan': 0, 'widths': widths, 'dummyRows': [], 'index': True, 'minRow': INDEX_MIN_ROW}
++
+     # ---- TOC split across daftar-isi pages by height
+     tp = [d for d in pages if d['tipe'] == 'daftar-isi']
+     if tp:
+diff --git a/engine/jsx/build_report.jsx b/engine/jsx/build_report.jsx
+index 3563c40..beac727 100644
+--- a/engine/jsx/build_report.jsx
++++ b/engine/jsx/build_report.jsx
+@@ -9,7 +9,7 @@
+ (function () {
+     var VERSION = '0.1.0';
+     var HIGHLIGHT_DUMMY = true;      // wrap dummy text in <dum>...</dum>
+-    var BR = String.fromCharCode(8232);   // forced line break (Shift+Enter)
++    var BR = '\n';   // forced line break (Shift+Enter); probeBreak() picks the character that really breaks a line
+     var TAB = '\t';
+     var LOG = [];
+     var NERR = 0, NWARN = 0;
+@@ -67,6 +67,21 @@
+         }
+         return File.openDialog('Select build_plan.json');
+     }
++    function probeBreak(d) {
++        var cands = ['\n', String.fromCharCode(8232), String.fromCharCode(11)], i, t, ok;
++        for (i = 0; i < cands.length; i++) {
++            ok = false;
++            try {
++                t = d.pages[0].textFrames.add({ geometricBounds: [0, 0, 20, 120] });
++                t.contents = 'a' + cands[i] + 'b';
++                ok = (t.paragraphs.length === 1 && t.lines.length === 2);
++                t.remove();
++            } catch (e) { ok = false; try { t.remove(); } catch (e2) { } }
++            if (ok) { log('INFO', 'break', 'forced line break = char code ' + cands[i].charCodeAt(0)); return cands[i]; }
++        }
++        log('ERROR', 'break', 'no character produced a forced line break; ID and EN will share one line');
++        return '\n';
++    }
+     function paraJoin(parts) { return parts.join('\r'); }
+     function biText(idText, enText, tagEn) {
+         return idText + BR + '<' + (tagEn || 'e') + '>' + enText + '</' + (tagEn || 'e') + '>';
+@@ -233,6 +248,7 @@
+         mkPS(T, 'paragraf.tabel', { leading: 11, leftIndent: 2, rightIndent: 2, spaceBefore: 1 });
+         mkPS(T, 'paragraf.tabel.angka', { justification: Justification.RIGHT_ALIGN, rightIndent: 4 }, 'paragraf.tabel');
+         mkPS(T, 'paragraf.tabel.periode', { pointSize: 12, leading: 14, fontStyle: 'Bold', fillColor: '$Terang', justification: Justification.CENTER_ALIGN }, 'paragraf.tabel');
++        mkPS(T, 'paragraf.tabel.indeks', { pointSize: 7.5, leading: 9, spaceBefore: 0.5 }, 'paragraf.tabel');
+         mkPS(T, 'judul.tabel', { fontStyle: 'Bold', pointSize: 9, leading: 12, spaceAfter: 2 });
+         mkPS(O, 'toc.bab', { fontStyle: 'Bold', pointSize: 9, leading: 11, spaceBefore: 3 });
+         mkPS(O, 'toc.sub', { pointSize: 7.5, leading: 8.5, leftIndent: 4 });
+@@ -387,6 +403,12 @@
+             }
+         }
+     }
++    function bleedRect(page, fill) {
++        var right = (page.side !== PageSideOptions.LEFT_HAND), bl = plan.doc.bleed;
++        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [-bl, right ? 0 : -bl, H + bl, right ? W + bl : W] });
++        r.fillColor = color(fill); r.strokeWeight = 0;
++        return r;
++    }
+     function placeholder(page, x1, y1, x2, y2) { return rect(page, x1, y1, x2, y2, 'Primary@10', L['Latar']); }
+ 
+     // ------------------------------------------------------------------ tables
+@@ -441,20 +463,21 @@
+                 (function (ii, jj) {
+                     safe('table p' + pageNo + ' r' + ii + 'c' + jj, function () {
+                         var v = t.rows[ii][jj], cl = tb.rows[ii + 1].cells[jj], isRun = (t.berjalan && jj === ncol - 1);
+-                        if (t.cols[jj].kind === 'text') {
+-                            txt = dum(biText(v[0], v[1]), isDum);
++                        var baseStyle = PS[t.index ? 'paragraf.tabel.indeks' : 'paragraf.tabel'];
++                        if (t.cols[jj].kind === 'text' && typeof v !== 'string') {
++                            txt = dum(t.cols[jj].inline ? (v[0] + ' <e>' + v[1] + '</e>') : biText(v[0], v[1]), isDum);
+                             cl.contents = txt;
+-                            cl.paragraphs.everyItem().appliedParagraphStyle = PS['paragraf.tabel'];
++                            cl.paragraphs.everyItem().appliedParagraphStyle = baseStyle;
+                         } else {
+                             txt = String(v);
+                             cl.contents = dum(txt, isDum);
+-                            cl.paragraphs.everyItem().appliedParagraphStyle = NUMRX.test(txt) && t.cols[jj].kind === 'num' ? PS['paragraf.tabel.angka'] : PS['paragraf.tabel'];
++                            cl.paragraphs.everyItem().appliedParagraphStyle = NUMRX.test(txt) && t.cols[jj].kind === 'num' ? PS['paragraf.tabel.angka'] : baseStyle;
+                         }
+                         cl.appliedCellStyle = CELLS[(last ? 'sel.akhir' : 'sel.isi') + (isRun ? '.berjalan' : '')];
+                     });
+                 })(i, j);
+             }
+-            safe('row height', function () { tb.rows[i + 1].minimumHeight = 11.8; });
++            safe('row height', function () { tb.rows[i + 1].minimumHeight = (t.minRow || 11.8); });
+         }
+         if (frame.overflows) { log('WARN', 'table p' + pageNo, 'table overflows its frame'); }
+         // header decor: rounded rectangles behind period columns
+@@ -483,8 +506,7 @@
+     function cover(page, d, back) {
+         page.appliedMaster = NothingEnum.NOTHING;
+         var b = [0, 0, H, W];
+-        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
+-        r.fillColor = color('Primary'); r.strokeWeight = 0;
++        bleedRect(page, 'Primary');
+         var a = pageArea(page);
+         var f = tf(page, a, b[1] + 22, b[0] + 90, b[3] - 22, b[0] + 190);
+         f.contents = '<jid>' + d.title.id + '</jid>' + BR + '<jen>' + d.title.en + '</jen>';
+@@ -498,8 +520,7 @@
+     }
+     function divider(page, d) {
+         var b = [0, 0, H, W], a = pageArea(page);
+-        var r = page.rectangles.add({ itemLayer: L['Latar'], geometricBounds: [b[0] - plan.doc.bleed, b[1] - plan.doc.bleed, b[2] + plan.doc.bleed, b[3] + plan.doc.bleed] });
+-        r.fillColor = color('Primary'); r.strokeWeight = 0;
++        bleedRect(page, 'Primary');
+         var no = String(d.chapter); if (no.length < 2) { no = '0' + no; }
+         var f1 = tf(page, a, a.x1, a.top + 20, a.x2, a.top + 90);
+         f1.contents = no; f1.parentStory.paragraphs.everyItem().appliedParagraphStyle = PS['divider.nomor'];
+@@ -612,6 +633,7 @@
+             M = plan.doc.margins; W = plan.doc.width; H = plan.doc.height; TEXTW = W - M.inside - M.outside;
+             doc = app.documents.add();
+             doc.insertLabel('ARSR_BUILD', 'yes');
++            BR = probeBreak(doc);
+             var dp = doc.documentPreferences;
+             dp.pageWidth = W; dp.pageHeight = H; dp.facingPages = plan.doc.facing; dp.pagesPerDocument = plan.doc.pageCount;
+             dp.documentBleedUniformSize = true; dp.documentBleedTopOffset = plan.doc.bleed;
+diff --git a/tests/mock_indesign.js b/tests/mock_indesign.js
+index 7c73699..8cfd889 100644
+--- a/tests/mock_indesign.js
++++ b/tests/mock_indesign.js
+@@ -15,12 +15,12 @@ function node(p, extra) {
+     get: function (t, k) {
+       if (typeof k === 'symbol') { return undefined; }
+       if (k in store) { return store[k]; }
+-      if (k === 'length') { return 3; }
++      if (k === 'length') { return /\.paragraphs$/.test(p) ? 1 : (/\.lines$/.test(p) ? 2 : 3); }
+       if (k === 'isValid') { return true; }
+       if (k === 'overflows') { return false; }
+       if (k === 'name') { return p; }
+       if (k === 'bounds') { var m = /pages\[(\d+)\]$/.exec(p); return (m && Number(m[1]) % 2 === 1) ? [0, 210, 297, 420] : [0, 0, 297, 210]; }
+-      if (k === 'side') { var m2 = /^doc\.pages\[(\d+)\]$/.exec(p); return (m2 && Number(m2[1]) % 2 === 1) ? 'LEFT_HAND' : (/masterSpreads/.test(p) && /pages\[0\]$/.test(p) ? 'LEFT_HAND' : 'RIGHT_HAND'); }
++      if (k === 'side') { var m2 = /^doc\.pages\[(\d+)\]$/.exec(p); return (m2 && Number(m2[1]) % 2 === 1) ? 'PageSideOptions.LEFT_HAND' : (/masterSpreads/.test(p) && /pages\[0\]$/.test(p) ? 'PageSideOptions.LEFT_HAND' : 'PageSideOptions.RIGHT_HAND'); }
+       if (k === 'toString' || k === 'valueOf') { return function () { return p; }; }
+       if (/^\d+$/.test(k)) { return node(p + '[' + k + ']'); }
+       if (k === 'add') {
+@@ -30,6 +30,8 @@ function node(p, extra) {
+           if (props && props.geometricBounds) {
+             var g = props.geometricBounds;   // y1, x1, y2, x2 relative to the page (ruler origin = page)
+             if (g[1] < -5 || g[3] > 215 || g[0] < -5 || g[2] > 302) { stats.outOfPage.push(p + ' ' + g.join(',')); }
++            var pm = /^doc\.pages\[(\d+)\]\./.exec(p);   // bleed must not cross the spine: right pages start at x>=0, left pages end at x<=210
++            if (pm && ((Number(pm[1]) % 2 === 0 && g[1] < 0) || (Number(pm[1]) % 2 === 1 && g[3] > 210))) { stats.outOfPage.push('spine ' + p + ' ' + g.join(',')); }
+           }
+           return node(p + '.add');
+         };
+@@ -48,7 +50,7 @@ function node(p, extra) {
+   });
+ }
+ function MockFile(p) {
+-  this.fsName = p; this.exists = fs.existsSync(p); this.encoding = '';
++  this.fsName = p; this.exists = fs.existsSync(p); this.encoding = ''; this.parent = { fsName: path.dirname(p) };
+   this._mode = null; this._buf = [];
+ }
+ MockFile.prototype.open = function (m) { this._mode = m; return m === 'w' ? true : this.exists; };
+diff --git a/tests/test_engine.py b/tests/test_engine.py
+index c8c0bdf..6b91262 100644
+--- a/tests/test_engine.py
++++ b/tests/test_engine.py
+@@ -194,6 +194,7 @@ class TestJsx(Base):
+         self.assertEqual(st['outOfPage'], [], 'items placed outside their page')
+         self.assertEqual(st['badUnits'], [], 'point sizes must be written as "N pt" strings')
+         self.assertTrue(os.path.exists(os.path.join(o, 'ARSR_Build_Done.txt')))
++        self.assertIn('forced line break = char code', rd(os.path.join(o, 'ARSR_Build_Log.txt')))
+         self.assertNotIn('alert', rd(os.path.join(ROOT, 'engine', 'jsx', 'build_report.jsx')).replace('No alert()', ''))
+         tables = sum(v for k, v in st['adds'].items() if k.endswith('.tables'))
+         self.assertEqual(tables, sum(1 for d in pl['pages'] if d.get('table')))
