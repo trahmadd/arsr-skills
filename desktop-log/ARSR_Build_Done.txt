@@ -1,2 +1,0 @@
-DONE OK | ERROR 0 | WARN 5
-Build finished. Do not run the build again; read ARSR_Build_Log.txt.
