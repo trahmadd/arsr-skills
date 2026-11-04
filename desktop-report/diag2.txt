@@ -1,2 +1,0 @@
-docs: 0
-active err: Error: No documents are open.
