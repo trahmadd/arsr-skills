@@ -25,12 +25,11 @@ This file and all skills are written in English. Report data is bilingual (Indon
 | Path | Purpose | State |
 |---|---|---|
 | `.opencode/skills/` | Skills (OpenCode format, one folder per skill) | `arsr-start`, `arsr-data-spec`, `indesign-jsx-basics`, `arsr-style-system`, `arsr-validate-qa`, `arsr-build-test` |
-| `catalogs/` | Numbering catalogs (GRI, OJK, SEOJK) and regulation profiles | R1 |
-| `templates/dummy-company/` | Fictional company config (chapters are generated) | R1 |
+| `catalogs/` | Numbering catalogs (GRI, OJK, SEOJK) and regulation profiles | done |
+| `templates/dummy-company/` | Fictional company config (chapters are generated) | done |
 | `engine/` | Python: parse, validate, dummy, plan (R2/R3). `engine/jsx/build_report.jsx`, `qa_document.jsx` (R3, untested in real InDesign) | R3 done, R4 skills done (evals R5) |
 | `evals/` + `tools/eval_check.py` | R5 tasks E1-E6 for testing skills on free OpenCode models | done |
 | `tools/jsx_lint.py` | Static ES3 linter for JSX (`python tools/jsx_lint.py engine/jsx`) | done |
-| `evals/` | Test prompts for free models | planned R5 |
 
 ## Build rule
 Run `build_report.jsx` once per change. It shows no dialog; read the Desktop logs. Never loop on it.
