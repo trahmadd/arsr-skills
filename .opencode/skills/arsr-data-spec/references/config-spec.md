@@ -8,7 +8,7 @@ Sections are `## SECTION` headings with `key: value` lines or pipe tables. Secti
 
 ## HALAMAN
 
-`ukuran: A4`, `facing: ya`, `bleed-mm: 3`, `jumlah-halaman` (multiple of 4), margin: `margin-atas-mm`, `margin-bawah-mm`, `margin-dalam-mm`, `margin-luar-mm`, `kolom`, `gutter-mm`.
+`ukuran: A4`, `facing: ya`, `divider: 1` or `2` (chapter divider; default 1 when absent), `bleed-mm: 3`, `jumlah-halaman` (multiple of 4), margin: `margin-atas-mm`, `margin-bawah-mm`, `margin-dalam-mm`, `margin-luar-mm`, `kolom`, `gutter-mm`.
 
 ## WARNA
 
@@ -43,7 +43,7 @@ Table `kode | alasan.id | alasan.en` for GRI, `omisi-ojk` for OJK, `omisi-seojk`
 
 ## BAB
 
-Table `no | slug | id | en | halaman-awal`. Chapter order and starting page.
+Table `no | slug | id | en | halaman-awal`. Chapter order and starting page. The slugs for each `jenis` come from `structures/lk.md`, `lt.md`, `lt-lk.md` (chapters marked `wajib: ya` are required, STR-20). `new` and `import` write this table for you.
 
 ## TOPIK
 

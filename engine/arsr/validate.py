@@ -30,6 +30,8 @@ SWATCHES = ['Primary', 'Secondary', 'Accent 1', 'Accent 2', 'Neutral Dark', 'Neu
 REQ_PAGE = {
     'sampul': ['judul.id', 'judul.en', 'subjudul.id', 'subjudul.en', 'tahun'],
     'divider': ['judul.id', 'judul.en'],
+    'divider-kanan': ['isi.id', 'isi.en'],
+    'catatan': ['judul.id', 'judul.en'],
     'teks': ['judul.id', 'judul.en', 'isi.id', 'isi.en'],
     'kartu': ['judul.id', 'judul.en', 'kartu'],
     'kutipan': ['kutipan.id', 'kutipan.en', 'nama', 'jabatan'],
@@ -349,6 +351,58 @@ def check_page(ctx, page, dummy_stats):
         rep.error('NUM-01', w, 'cek given on a page without a table')
 
 
+# ---------------------------------------------------------------- report type
+STRUCT_FILE = {'LK': 'lk.md', 'LT': 'lt.md', 'LT+LK': 'lt-lk.md'}
+LT_SKIPS = ('GRI-', 'OJK-01', 'OJK-03', 'OJK-04', 'OJK-05', 'OJK-08')
+
+
+def filter_rules(rules, jenis):
+    """An annual report (LT) is not checked against GRI / POJK 51; SEOJK rules are skipped for LK by their own rule."""
+    if jenis == 'LT':
+        return set(r for r in rules if not r.startswith(LT_SKIPS))
+    return rules
+
+
+def check_structure(ctx, root):
+    jenis = ctx.kv('PROYEK', 'jenis')
+    if jenis not in STRUCT_FILE:
+        return
+    sf = root / 'structures' / STRUCT_FILE[jenis]
+    if not sf.is_file():
+        ctx.rep.warn('STR-20', 'structures/' + STRUCT_FILE[jenis], 'structure file for jenis %s not found; chapter checks skipped' % jenis)
+        return
+    scfg = mdparse.parse_config(str(sf))
+    have = set(r.get('slug', '') for r in ctx.rows('BAB'))
+    for r in mdparse.cfg_rows(scfg, 'BAB'):
+        if r.get('wajib') == 'ya' and r['slug'] not in have:
+            ctx.rep.error('STR-20', 'data/00_config.md', 'jenis %s requires chapter "%s" (%s); add it to config BAB' % (jenis, r['slug'], r['id']))
+    kinds = set(p.tipe for p in ctx.pages)
+    for r in mdparse.cfg_rows(scfg, 'HALAMAN-WAJIB'):
+        if r['tipe'] not in kinds:
+            ctx.rep.error('STR-21', 'pages', 'jenis %s requires at least one page of type %s (%s)' % (jenis, r['tipe'], r.get('keterangan', '')))
+
+
+def check_dividers(ctx):
+    mode = ctx.kv('HALAMAN', 'divider') or '1'
+    if mode not in ('1', '2'):
+        ctx.rep.error('CFG-02', 'data/00_config.md', 'divider must be 1 or 2')
+        return
+    pages = ctx.pages
+    for i, p in enumerate(pages):
+        nxt = pages[i + 1] if i + 1 < len(pages) else None
+        prv = pages[i - 1] if i else None
+        if p.tipe == 'divider-kanan':
+            if mode != '2':
+                ctx.rep.error('STR-13', ctx.where(p), 'divider-kanan is only allowed when config divider is 2')
+            elif prv is None or prv.tipe != 'divider':
+                ctx.rep.error('STR-13', ctx.where(p), 'divider-kanan must directly follow a divider page')
+        if p.tipe == 'divider' and mode == '2':
+            if nxt is None or nxt.tipe != 'divider-kanan':
+                ctx.rep.error('STR-13', ctx.where(p), 'divider 2 needs a divider-kanan page right after it')
+            if p.n % 2:
+                ctx.rep.error('STR-13', ctx.where(p), 'two-page divider must start on an even (left) page; page %d is a right page - add or remove one page before it (a catatan page works)' % p.n)
+
+
 # ---------------------------------------------------------------- main
 
 def validate(project_dir, repo_root=None):
@@ -405,6 +459,9 @@ def validate(project_dir, repo_root=None):
     if len(ctx.pages) % 4:
         rep.error('STR-02', 'data', 'page count %d is not a multiple of 4' % len(ctx.pages))
 
+    check_structure(ctx, root)
+    check_dividers(ctx)
+
     ds = {'pages': [], 'rows': 0}
     for p in ctx.pages:
         check_page(ctx, p, ds)
@@ -418,7 +475,7 @@ def validate(project_dir, repo_root=None):
         if prof:
             rep.error('CFG-02', 'data/00_config.md', 'profil-regulasi "%s" not found in catalogs/profiles/' % prof)
     else:
-        ctx.rules = rules
+        ctx.rules = filter_rules(rules, ctx.kv('PROYEK', 'jenis'))
         regrules.run(ctx)
     rep.meta = ['profile: %s | gri.versi: %s | jenis: %s | style: %s' % (prof, ctx.versi, ctx.kv('PROYEK', 'jenis'), ctx.style)]
     ctx.chapters = chapters

@@ -1,14 +1,35 @@
 # -*- coding: utf-8 -*-
-"""Generate a fictional, internally consistent project (bab 01-07) from a template 00_config.md.
+"""Generate a fictional, internally consistent project (LK, LT or LT+LK, one or two-page dividers) from a template 00_config.md.
 
 All content is invented and flagged `dummy: ya`. Numbers come from one fact table so the same
 fact has the same value on every page. Table totals satisfy their own `cek` formulas.
 """
 import os
-import shutil
+import re
 
 from . import mdparse, numfmt
+from .arrange import INTRO, SUB, TITLE, arrange, config_text, render_chapters  # noqa: F401
 
+STRUCT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'structures')
+STRUCT_FILE = {'LK': 'lk.md', 'LT': 'lt.md', 'LT+LK': 'lt-lk.md'}
+
+_PROFIL = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24]
+_GOV = [26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+_EKO = [38, 39, 40, 41, 42, 43, 44]
+_ENV = list(range(46, 57))
+_SOC = list(range(58, 69))
+# source page numbers (the numbers used inside Gen.plan) per chapter, per report type
+LAYOUT = {
+    'LK': [('pendahuluan', [1, 2, 3, 6, 7, 8, 10]), ('manajemen', [4, 5, 36]), ('profil', _PROFIL),
+           ('tata-kelola', [9] + _GOV[:]), ('ekonomi', _EKO), ('lingkungan', _ENV), ('sosial', _SOC),
+           ('indeks', [70, 72, 73, 74, 75, 76, 77, 79, 80])],
+    'LT': [('ikhtisar', [1, 2, 3, 6, 10, 11, 12]), ('manajemen', [4, 5, 36]), ('profil', _PROFIL),
+           ('analisis', [22, 101, 103]), ('tata-kelola', _GOV), ('tjsl', [65, 55, 66]),
+           ('keuangan', [102, 104, 71]), ('indeks', [70, 78, 79, 80])],
+    'LT+LK': [('pendahuluan', [1, 2, 3, 6, 7, 8, 10, 11, 12]), ('manajemen', [4, 5, 36]), ('profil', _PROFIL),
+              ('analisis', [22, 101, 103]), ('tata-kelola', [9] + _GOV), ('keberlanjutan', _EKO + _ENV + _SOC),
+              ('keuangan', [102, 104, 71]), ('indeks', [70, 72, 73, 74, 75, 76, 77, 78, 79, 80])],
+}
 TOPIC_ABOUT = {
     'T01': ('nilai ekonomi yang dihasilkan dan didistribusikan', 'economic value generated and distributed'),
     'T02': ('belanja kepada pemasok di sekitar wilayah operasi', 'spending on suppliers near operating sites'),
@@ -32,7 +53,7 @@ def r1(x):
 
 
 class Gen(object):
-    def __init__(self, cfg):
+    def __init__(self, cfg, jenis=None, divider=None):
         self.cfg = cfg
         kv = lambda s, k: mdparse.cfg_kv(cfg, s, k)  # noqa: E731
         self.y = int(kv('PROYEK', 'tahun-laporan'))
@@ -44,9 +65,13 @@ class Gen(object):
         self.since = kv('PROYEK', 'berdiri') or '1998'
         self.theme = (kv('PROYEK', 'tema.id'), kv('PROYEK', 'tema.en'))
         self.addr = (kv('KONTAK', 'alamat.id'), kv('KONTAK', 'alamat.en'))
-        self.bab = mdparse.cfg_rows(cfg, 'BAB')
+        self.jenis = jenis or kv('PROYEK', 'jenis') or 'LT+LK'
+        if self.jenis not in LAYOUT:
+            raise ValueError('jenis must be LK, LT or LT+LK, got %s' % self.jenis)
+        self.divider = int(divider or kv('HALAMAN', 'divider') or 2)
+        scfg = mdparse.parse_config(os.path.join(STRUCT_DIR, STRUCT_FILE[self.jenis]))
+        self.struct = mdparse.cfg_rows(scfg, 'BAB')
         self.topics = dict((r['id'], r) for r in mdparse.cfg_rows(cfg, 'TOPIK'))
-        self.total_pages = int(kv('HALAMAN', 'jumlah-halaman'))
         self.pages = {}
         self._facts()
 
@@ -196,7 +221,7 @@ class Gen(object):
         f, pct = self.f, self.pct
 
         # ---------------- bab 01
-        self.page(1, 'sampul', judul=('Laporan Tahunan dan Keberlanjutan %d' % y, 'Annual and Sustainability Report %d' % y),
+        self.page(1, 'sampul', judul=('%s %d' % (TITLE[self.jenis][0], y), '%s %d' % (TITLE[self.jenis][1], y)),
                   subjudul=self.theme, tahun=str(y))
         self.page(2, 'daftar-isi', judul=('Daftar Isi', 'Table of Contents'))
         self.page(3, 'teks', judul=('Tentang Laporan', 'About This Report'),
@@ -274,7 +299,6 @@ class Gen(object):
                   cek='r3 = r1 * r2 / 1000', numeric=True)
 
         # ---------------- bab 02
-        self.page(13, 'divider', judul=self._bab(2), subjudul=('Mengenal %s' % sh, 'Getting to know %s' % sh))
         self.page(14, 'teks', judul=('Identitas Perusahaan', 'Company Identity'), gri=['2-1'], ojk=['C.2'], seojk=['LT.5'],
                   isi=('%s (kode saham %s) didirikan pada tahun %s dan berkedudukan di %s. Bentuk badan hukum adalah perseroan terbatas terbuka.' % (
                       co, self.code, self.since, self.addr[0]),
@@ -339,7 +363,6 @@ class Gen(object):
                        'The company began as a regional energy distributor, grew into an integrated energy provider and listed its shares on the exchange.'))
 
         # ---------------- bab 03
-        self.page(25, 'divider', judul=self._bab(3), subjudul=('Landasan keberlanjutan', 'The foundation of sustainability'))
         self.page(26, 'teks', judul=('Tata Kelola Keberlanjutan', 'Sustainability Governance'),
                   gri=['2-9', '2-12', '2-13', '2-14'], ojk=['E.1'], seojk=['LT.7', 'LT.8'],
                   isi=('Dewan Komisaris mengawasi pengelolaan dampak, Direksi menetapkan strategi, dan Komite Keberlanjutan mengoordinasikan '
@@ -407,7 +430,6 @@ class Gen(object):
                        'All members of the Board of Directors and Board of Commissioners declare full responsibility for the accuracy of this report.'))
 
         # ---------------- bab 04
-        self.page(37, 'divider', judul=self._bab(4), subjudul=('Nilai yang dibagikan', 'Value shared'))
         self.topic_page(38, 'T01', ['201-1', '201-2', '201-3', '201-4'], [
             self.row('Nilai ekonomi dihasilkan', 'Economic value generated', 'Miliar Rp', 'IDR billion', F['revenue'], 1),
             self.row('Biaya kepada pemasok', 'Payments to suppliers', 'Miliar Rp', 'IDR billion', F['supplier'], 1),
@@ -461,7 +483,6 @@ class Gen(object):
                        'The company monitors compliance through internal audits and regular legal reviews. No material fines were recorded in the reporting year.'))
 
         # ---------------- bab 05
-        self.page(45, 'divider', judul=self._bab(5), subjudul=('Menjaga bumi', 'Caring for the planet'))
         self.topic_page(46, 'T04', ['302-1', '302-2', '302-3', '302-4', '302-5'], [
             self.row('Bahan bakar tak terbarukan', 'Non-renewable fuel', 'GJ', 'GJ', F['fuel']),
             self.row('Listrik dibeli', 'Purchased electricity', 'GJ', 'GJ', F['elec']),
@@ -540,7 +561,6 @@ class Gen(object):
                        'Key challenges are dependence on non-renewable fuel and the need for more complete supply chain emissions data.'))
 
         # ---------------- bab 06
-        self.page(57, 'divider', judul=self._bab(6), subjudul=('Manusia dan masyarakat', 'People and communities'))
         self.topic_page(58, 'T08', ['401-1', '401-2', '401-3'], [
             self.row('Karyawan baru', 'New hires', 'Orang', 'Persons', F['hires']),
             self.row('Karyawan keluar', 'Leavers', 'Orang', 'Persons', F['leavers']),
@@ -618,7 +638,6 @@ class Gen(object):
                        'Community enterprise groups raised their income through training and market access facilitated by the company.'))
 
         # ---------------- bab 07
-        self.page(69, 'divider', judul=self._bab(7), subjudul=('Rujukan dan penutup', 'References and closing'))
         self.page(70, 'teks', judul=('Verifikasi, Umpan Balik, dan Tanggapan', 'Assurance, Feedback and Responses'),
                   gri=['2-5'], ojk=['G.1', 'G.2', 'G.3'],
                   isi=('Verifikasi independen: laporan ini belum memperoleh verifikasi tertulis dari pihak independen; perusahaan berencana '
@@ -647,81 +666,75 @@ class Gen(object):
                        '%s. Email: %s. Phone: %s. Website: %s.' % (self.addr[1], mdparse.cfg_kv(self.cfg, 'KONTAK', 'email'),
                                                                   mdparse.cfg_kv(self.cfg, 'KONTAK', 'telepon'), mdparse.cfg_kv(self.cfg, 'KONTAK', 'web'))))
         self.page(80, 'sampul', judul=(co, co), subjudul=self.theme, tahun=str(y))
-        missing = [n for n in range(1, self.total_pages + 1) if n not in self.pages]
-        extra = [n for n in self.pages if n > self.total_pages]
-        if missing or extra:
-            raise ValueError('dummy plan covers %d pages; config jumlah-halaman is %d (missing %s, extra %s)' % (
-                len(self.pages), self.total_pages, missing[:5], extra[:5]))
+        # ---------------- pages used by the annual-report chapters (numbers 101+ are not part of the old 80-page plan)
+        self.page(101, 'tabel', judul=('Tinjauan Kinerja Keuangan', 'Financial Performance Review'), seojk=['LT.6'],
+                  isi=('Laba usaha dan laba bersih meningkat seiring pertumbuhan pendapatan yang lebih cepat daripada beban usaha.',
+                       'Operating profit and net profit increased as revenue grew faster than operating expenses.'),
+                  tabel=self.numtable([
+                      self.row('Pendapatan', 'Revenue', 'Miliar Rp', 'IDR billion', F['revenue'], 1),
+                      self.row('Beban usaha', 'Operating expenses', 'Miliar Rp', 'IDR billion', F['opex'], 1),
+                      self.row('Laba usaha', 'Operating profit', 'Miliar Rp', 'IDR billion', F['op'], 1),
+                      self.row('Beban pajak', 'Income tax expense', 'Miliar Rp', 'IDR billion', F['tax'], 1),
+                      self.row('Laba bersih', 'Net profit', 'Miliar Rp', 'IDR billion', F['net'], 1)]),
+                  cek='r3 = r1 - r2; r5 = r3 - r4', numeric=True)
+        self.page(102, 'tabel', judul=('Ringkasan Posisi Keuangan', 'Summary of Financial Position'),
+                  tabel=self.numtable([
+                      self.row('Total aset', 'Total assets', 'Miliar Rp', 'IDR billion', F['assets'], 1),
+                      self.row('Total liabilitas', 'Total liabilities', 'Miliar Rp', 'IDR billion', F['liab'], 1),
+                      self.row('Total ekuitas', 'Total equity', 'Miliar Rp', 'IDR billion', F['equity'], 1)]),
+                  cek='r3 = r1 - r2', numeric=True)
+        self.page(103, 'teks', judul=('Prospek Usaha', 'Business Prospects'),
+                  isi=('Perusahaan memperkirakan permintaan layanan tetap stabil pada tahun berikutnya dan akan memprioritaskan efisiensi biaya, '
+                       'penguatan modal kerja, dan investasi pada kapasitas yang sudah disetujui.',
+                       'The company expects service demand to remain steady next year and will prioritize cost efficiency, working capital '
+                       'strength and investment in already approved capacity.'))
+        self.page(104, 'teks', judul=('Laporan Auditor Independen', 'Independent Auditor Report'),
+                  isi=('Laporan auditor independen atas laporan keuangan konsolidasian dilampirkan pada bagian terpisah. Halaman ini adalah '
+                       'penanda posisi lampiran dan memuat data contoh.',
+                       'The independent auditor report on the consolidated financial statements is attached as a separate part. This page marks '
+                       'the position of the attachment and holds sample data.'))
         return self.pages
 
-    def _bab(self, no):
-        for r in self.bab:
-            if int(r['no']) == no:
-                return (r['id'], r['en'])
-        raise ValueError('config BAB has no chapter %d' % no)
+    # ---------------------------------------------------------- assembly by report type
+    def assemble(self):
+        """Arrange the source pages into final physical pages for self.jenis and self.divider."""
+        layout = [(slug, [self._tweak(k, dict(self.pages[k])) for k in ids]) for slug, ids in LAYOUT[self.jenis]]
+        return arrange(layout, self.struct, self.divider, dummy=True)
 
-    # ------------------------------------------------------------- emit
-    def render_page(self, n, p):
-        head = '## HAL %d | tipe: %s' % (n, p['tipe'])
-        for a in ('gri', 'ojk', 'seojk', 'topik'):
-            if p.get(a):
-                head += ' | %s: %s' % (a, ', '.join(p[a]))
-        out = [head]
-        if 'judul' in p:
-            out += ['judul.id: ' + p['judul'][0], 'judul.en: ' + p['judul'][1]]
-        if 'subjudul' in p:
-            out += ['subjudul.id: ' + p['subjudul'][0], 'subjudul.en: ' + p['subjudul'][1]]
-        if 'tahun' in p:
-            out.append('tahun: ' + p['tahun'])
-        if 'isi' in p:
-            for lang, text in zip(('id', 'en'), p['isi']):
-                paras = text.split('\n\n')
-                out.append('isi.%s: %s' % (lang, paras[0]))
-                for extra in paras[1:]:
-                    out += ['', '  ' + extra]
-        if 'kutipan' in p:
-            out += ['kutipan.id: ' + p['kutipan'][0], 'kutipan.en: ' + p['kutipan'][1],
-                    'nama: ' + p['nama'], 'jabatan: ' + p['jabatan']]
-        if 'kartu' in p:
-            out.append('kartu:')
-            for a, li, le in p['kartu']:
-                out.append('  - angka: %s | label.id: %s | label.en: %s' % (a, li, le))
-        if 'tabel' in p:
-            out.append('tabel:')
-            for i, cells in enumerate(p['tabel']):
-                out.append('  | ' + ' | '.join(cells) + ' |')
-            if p.get('cek'):
-                out.append('cek: ' + p['cek'])
-            if p.get('numeric'):
-                out.append('berjalan: 1')
-                out.append('periode: ' + ', '.join(str(x) for x in self.Y))
-        out += ['sumber: dummy', 'dummy: ya', '']
-        return '\n'.join(out)
+    def _tweak(self, k, pg):
+        if self.jenis == 'LT':
+            for a in ('gri', 'ojk', 'topik'):
+                pg.pop(a, None)
+            if k == 3:
+                i, e = pg['isi']
+                pg['isi'] = (i.split(' Laporan disusun')[0] + ' Laporan disusun mengacu pada SEOJK 16/SEOJK.04/2021.',
+                             e.split(' It is prepared')[0] + ' It is prepared with reference to SEOJK 16/SEOJK.04/2021.')
+        if self.jenis == 'LK':
+            pg.pop('seojk', None)
+        return pg
 
     def chapters(self):
-        starts = sorted((int(r['halaman-awal']), r) for r in self.bab)
-        res = []
-        for i, (start, r) in enumerate(starts):
-            end = starts[i + 1][0] - 1 if i + 1 < len(starts) else self.total_pages
-            lines = ['# BAB %s | id: %s | en: %s' % (r['no'], r['id'], r['en']), '']
-            for n in range(start, end + 1):
-                lines.append(self.render_page(n, self.pages[n]))
-            res.append(('%s_%s.md' % (r['no'], r['slug']), '\n'.join(lines).rstrip() + '\n'))
-        return res
+        chapters, pages = self.assemble()
+        self.final = pages
+        self.chapter_rows = chapters
+        return render_chapters(chapters, pages, self.Y)
 
 
-def generate(template_dir, out_dir, config=None):
-    """Write a dummy project. config = path of a 00_config.md to use instead of the template's (year, names, palette)."""
+def generate(template_dir, out_dir, config=None, jenis=None, divider=None):
+    """Write a project's data folder with dummy content for the chosen report type.
+    config = a 00_config.md to start from (year, names, palette); jenis = LK | LT | LT+LK; divider = 1 | 2."""
     cfg_src = config or os.path.join(template_dir, 'data', '00_config.md')
     cfg = mdparse.parse_config(cfg_src)
-    g = Gen(cfg)
+    g = Gen(cfg, jenis, divider)
     g.plan()
+    files = g.chapters()
     data = os.path.join(out_dir, 'data')
     os.makedirs(data)
-    shutil.copyfile(cfg_src, os.path.join(data, '00_config.md'))
-    n = 0
-    for fname, text in g.chapters():
+    text = mdparse.read_text(cfg_src)
+    text = config_text(text, g.jenis, g.divider, g.chapter_rows, len(g.final))
+    with open(os.path.join(data, '00_config.md'), 'w', encoding='utf-8', newline='\n') as fh:
+        fh.write(text)
+    for fname, body in files:
         with open(os.path.join(data, fname), 'w', encoding='utf-8', newline='\n') as fh:
-            fh.write(text)
-        n += 1
-    return n
+            fh.write(body)
+    return len(files)

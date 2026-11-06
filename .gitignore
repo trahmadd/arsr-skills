@@ -19,3 +19,8 @@ diag.txt
 
 desktop-report/
 pt-test-repo/
+
+logs/
+
+logs/
+source/*.tmp

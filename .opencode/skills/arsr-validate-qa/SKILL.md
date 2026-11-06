@@ -5,15 +5,15 @@ description: Run and read the read-only checks - Python data validation (GRI, OJ
 
 # arsr-validate-qa
 
-All checks are read-only. They write only a log on the Desktop. Nothing in the data or document is modified.
+All checks are read-only. They write only a log in `<project>/logs/`. Nothing in the data or document is modified.
 
 ## Three checks, in order
 
 | Step | Command | Log |
 |---|---|---|
-| 1 data | `python engine/run.py validate <project>` | `Desktop/ARSR_Validate_Log.txt` |
+| 1 data | `python engine/run.py validate <project>` | `<project>/logs/ARSR_Validate_Log.txt` |
 | 2 plan | `python engine/run.py plan <project>` (refuses if step 1 has errors; PLN-01 = index/TOC capacity) | same log |
-| 3 document | In InDesign open the built document, run `engine/jsx/qa_document.jsx` | `Desktop/ARSR_QA_Log.txt` |
+| 3 document | In InDesign open the built document, run `engine/jsx/qa_document.jsx` | `<project>/logs/ARSR_QA_Log.txt` |
 
 Log line: `[RULE] where | message`. First line: `ERROR n | WARN n | ...`.
 

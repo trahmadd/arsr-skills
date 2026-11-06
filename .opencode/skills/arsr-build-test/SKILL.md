@@ -8,15 +8,19 @@ description: Build the InDesign document from a validated project and test it - 
 ## Pipeline
 
 1. `python engine/run.py validate <project>` -> ERROR 0.
-2. `python engine/run.py plan <project>` -> `<project>/build/build_plan.json` and pointer `%APPDATA%\ARSR\last_plan.txt`.
-3. In InDesign: File > Scripts > Scripts Panel > Scripts Panel folder... open the `engine/jsx` folder (or double-click `build_report.jsx`). It finds the plan through the pointer file; if none, it asks for the file.
-4. Read `Desktop/ARSR_Build_Log.txt`. `Desktop/Dummy_Register.txt` lists dummy items.
-5. Run `qa_document.jsx` on the result (see `arsr-validate-qa`).
+2. `python engine/run.py plan <project>` -> `<project>/build/build_plan.json`, the launchers `<project>/build/run_build.jsx` and `run_qa.jsx`, and the pointer `%APPDATA%\ARSR\last_plan.txt`.
+3. Run the launcher in InDesign. DEFAULT for an agent on Windows (no manual step):
+   `powershell -ExecutionPolicy Bypass -File tools/indesign_run.ps1 <project>/build/run_build.jsx`
+   It starts InDesign through COM, runs the file with DoScript, blocks dialogs, and returns when done. Output `OK:` = it ran; `ERROR:` = read the message.
+   Fallback when COM fails (exit code 2 or an error): ask the user to copy the launcher into `%APPDATA%\Adobe\InDesign\Version <n>\en_US\Scripts\Scripts Panel` and double-click it in the Scripts panel.
+   The launcher names this project's plan, so no pointer or dialog is needed.
+4. Read `<project>/logs/ARSR_Build_Log.txt`. `<project>/logs/Dummy_Register.txt` lists dummy items.
+5. Run QA the same way: `... tools/indesign_run.ps1 <project>/build/run_qa.jsx` (see `arsr-validate-qa`).
 
-Optional automation from Python on Windows: `win32com.client.Dispatch('InDesign.Application')` then `DoScript(path, 1246973031)` (ScriptLanguage.JAVASCRIPT). Not required; manual run is the baseline.
+A run ends with exit code 0 even if the build logged errors: always read `ARSR_Build_Done.txt`.
 
 ## Run the build ONCE
-- The build creates ONE new document. Run it a single time, then read `Desktop/ARSR_Build_Done.txt` (first line DONE OK or DONE WITH ERRORS) and `Desktop/ARSR_Build_Log.txt`.
+- The build creates ONE new document. Run it a single time, then read `<project>/logs/ARSR_Build_Done.txt` (first line DONE OK or DONE WITH ERRORS) and `<project>/logs/ARSR_Build_Log.txt`.
 - There is no popup. Never run again to "verify" or "wait for the popup"; a second run is skipped while a built document is open.
 - Rerun only after you changed code or data because of an ERROR in the log. Close the old document first (or `$.global.ARSR_FORCE = true`).
 - Look at the result in InDesign (Pages panel and a few spreads) before declaring success: items must sit inside their pages and text must be normal size.

@@ -9,7 +9,7 @@ import json
 import os
 import re
 
-from . import mdparse, regrules, validate
+from . import mdparse, project, regrules, validate
 
 SCHEMA = 1
 # Rows one index page can hold (index row heights are fixed in build_report.jsx).
@@ -54,7 +54,7 @@ def pack_rows(rows, cols, widths, min_row):
     return pages
 TOC_MM = {1: 11.0, 2: 6.0}   # entry heights used by build_report.jsx
 TOC_PAGE_MM = 455.0         # two columns of the daftar-isi page
-SKIP_TOC_TYPES = ('sampul', 'divider', 'daftar-isi', 'indeks-gri', 'indeks-ojk', 'indeks-seojk', 'kutipan')
+SKIP_TOC_TYPES = ('sampul', 'divider', 'divider-kanan', 'catatan', 'daftar-isi', 'indeks-gri', 'indeks-ojk', 'indeks-seojk', 'kutipan')
 
 
 class PlanError(Exception):
@@ -187,6 +187,9 @@ def build(project_dir, repo_root=None):
         if p.tipe not in SKIP_TOC_TYPES and d.get('title') and p.n != chapters[chapter_of(p.n) - 1]['start']:
             toc.append({'level': 2, 'id': d['title']['id'], 'en': d['title']['en'], 'page': p.n, 'chapter': d['chapter']})
     toc.sort(key=lambda e: (e['page'], e['level']))
+    for d in pages:
+        if d['tipe'] == 'divider-kanan':
+            d['sections'] = [e for e in toc if e['level'] == 2 and e['chapter'] == d['chapter']]
 
     # ---- registry
     cited = {'gri': {}, 'ojk': {}, 'seojk': {}}
@@ -288,7 +291,7 @@ def build(project_dir, repo_root=None):
                 'bleed': float(kv('HALAMAN', 'bleed-mm')),
                 'margins': {'top': float(kv('HALAMAN', 'margin-atas-mm')), 'bottom': float(kv('HALAMAN', 'margin-bawah-mm')),
                             'inside': float(kv('HALAMAN', 'margin-dalam-mm')), 'outside': float(kv('HALAMAN', 'margin-luar-mm'))},
-                'columns': int(kv('HALAMAN', 'kolom')), 'gutter': float(kv('HALAMAN', 'gutter-mm'))},
+                'divider': int(kv('HALAMAN', 'divider') or 1), 'columns': int(kv('HALAMAN', 'kolom')), 'gutter': float(kv('HALAMAN', 'gutter-mm'))},
         'colors': sw,
         'fonts': {'main': kv('FONT', 'font-utama'), 'num': kv('FONT', 'font-angka'),
                   'size': float(kv('FONT', 'ukuran-dasar-pt')), 'leading': float(kv('FONT', 'leading-dasar-pt'))},
@@ -306,9 +309,15 @@ def write(project_dir, out_path=None, repo_root=None):
     d = os.path.dirname(os.path.abspath(out))
     if not os.path.isdir(d):
         os.makedirs(d)
+    logs = os.path.join(os.path.abspath(str(project_dir)), 'logs')
+    if not os.path.isdir(logs):
+        os.makedirs(logs)
+    plan['doc']['logDir'] = logs.replace('\\', '/')
     with open(out, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(plan, f, ensure_ascii=True, indent=1, sort_keys=True)
         f.write('\n')
+    project.ensure_skeleton(project_dir)
+    project.write_launchers(project_dir, out, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
     return out, plan, rep
 
 

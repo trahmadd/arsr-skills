@@ -58,8 +58,12 @@ MockFile.prototype.read = function () { return fs.readFileSync(this.fsName, 'utf
 MockFile.prototype.write = function (s) { this._buf.push(s); };
 MockFile.prototype.close = function () { if (this._mode === 'w') { fs.writeFileSync(this.fsName, this._buf.join('')); } };
 MockFile.openDialog = function () { return new MockFile(planPath); };
+function MockFolder(p) { this.fsName = p; this.exists = fs.existsSync(p); }
+MockFolder.prototype.create = function () { fs.mkdirSync(this.fsName, { recursive: true }); this.exists = true; return true; };
+MockFolder.desktop = { fsName: outDir };
+MockFolder.userData = { fsName: path.join(outDir, 'appdata') };
 var sb = {
-  File: MockFile, Folder: { desktop: { fsName: outDir }, userData: { fsName: path.join(outDir, 'appdata') } },
+  File: MockFile, Folder: MockFolder,
   $: { global: {} }, alert: function () { }, String: String, Math: Math, Number: Number, eval: eval,
   SpecialCharacters: { AUTO_PAGE_NUMBER: '#PN#' }
 };

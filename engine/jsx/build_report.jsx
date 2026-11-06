@@ -3,7 +3,7 @@
  * build_report.jsx - ARSR build engine (ExtendScript ES3, ASCII only).
  * Reads build_plan.json (made by: python engine/run.py plan <project>) and builds the InDesign document:
  * swatches, tints, styles (GREP tag system), layers, master, pages, native tables, TOC and indexes.
- * It holds NO project data. Log: Desktop/ARSR_Build_Log.txt.
+ * It holds NO project data. Log: <project>/logs/ARSR_Build_Log.txt.
  * STATUS: written without access to a real InDesign. Run, read the log, fix. See skills/arsr-build-test.
  */
 (function () {
@@ -31,8 +31,20 @@
         f.close();
         return t;
     }
+    // Logs go to <project>/logs (plan.doc.logDir); Desktop only when the plan has none.
+    function logFolder() {
+        var fo;
+        try {
+            if (plan && plan.doc && plan.doc.logDir) {
+                fo = new Folder(plan.doc.logDir);
+                if (!fo.exists) { fo.create(); }
+                if (fo.exists) { return fo.fsName; }
+            }
+        } catch (e) { }
+        return Folder.desktop.fsName;
+    }
     function writeLog() {
-        var f = new File(Folder.desktop.fsName + '/ARSR_Build_Log.txt');
+        var f = new File(logFolder() + '/ARSR_Build_Log.txt');
         f.encoding = 'UTF-8';
         if (f.open('w')) {
             f.write('ERROR ' + NERR + ' | WARN ' + NWARN + ' | build_report.jsx ' + VERSION + '\n' + LOG.join('\n') + '\n');
@@ -41,7 +53,7 @@
     }
     // No alert(): a modal dialog blocks automation and made agents re-run the build. Status goes to files.
     function writeDone() {
-        var f = new File(Folder.desktop.fsName + '/ARSR_Build_Done.txt');
+        var f = new File(logFolder() + '/ARSR_Build_Done.txt');
         f.encoding = 'UTF-8';
         if (f.open('w')) {
             f.write((NERR ? 'DONE WITH ERRORS' : 'DONE OK') + ' | ERROR ' + NERR + ' | WARN ' + NWARN + '\nBuild finished. Do not run the build again; read ARSR_Build_Log.txt.\n');
@@ -89,7 +101,7 @@
     function dum(text, on) { return (on && HIGHLIGHT_DUMMY) ? '<dum>' + text + '</dum>' : text; }
 
     // ------------------------------------------------------------------ globals set in run()
-    var app_ = app, doc, plan, L = {}, SW = {}, PS = {}, CS = {}, W, H, M, TEXTW;
+    var app_ = app, doc, plan, L = {}, SW = {}, PS = {}, CS = {}, W, H, M, TEXTW, TABLE_H = 0;
     var NUMRX = /^\(?[\-\u2212+]?\(?[A-Za-z$]{0,3}\s?[0-9][0-9.,]*\s?%?\)?$/;
 
     // ------------------------------------------------------------------ swatches and tints
@@ -499,6 +511,12 @@
                 x += widths[j];
             }
         }
+        TABLE_H = 16.2 + t.rows.length * (t.minRow || 11.8);
+        safe('table height', function () {
+            var h = 0, k, rh;
+            for (k = 0; k < tb.rows.length; k++) { rh = Number(tb.rows[k].height); if (isNaN(rh)) { return; } h += rh; }
+            if (h > 0) { TABLE_H = h; }
+        });
         return frame;
     }
 
@@ -533,6 +551,29 @@
             f3.parentStory.paragraphs.everyItem().appliedParagraphStyle = PS['divider.sub'];
         }
         rect(page, a.x1, a.top + 94, a.x1 + 40, a.top + 95.5, 'Accent 1', L['Latar']);
+    }
+    // right-hand page of a two-page divider: chapter intro, list of the chapter's sections (from the registry), photo slot
+    function dividerRight(page, d, a) {
+        var i, e, parts = [], styles = [], f, fl, list = d.sections || [];
+        bleedRect(page, 'Primary@10');
+        f = tf(page, a, a.x1, a.top + 20, a.x2, a.top + 62);
+        fillText(f, paraJoin(bodyParas(d)), 'paragraf', 'p' + d.n + ' intro');
+        for (i = 0; i < list.length; i++) {
+            e = list[i];
+            parts.push(e.id + TAB + e.page + BR + '<e>' + e.en + '</e>');
+            styles.push('toc.sub');
+        }
+        if (parts.length) {
+            fl = tf(page, a, a.x1, a.top + 70, a.x2, a.bottom - 56);
+            fl.contents = paraJoin(parts);
+            setStyleByParagraphs(fl, styles);
+            if (fl.overflows) { log('WARN', 'p' + d.n, 'section list overflows'); }
+        }
+        placeholder(page, a.x1, a.bottom - 50, a.x2, a.bottom);
+    }
+    function notesPage(page, d, a) {
+        var y = title(page, a, d, a.top);
+        placeholder(page, a.x1, y + 4, a.x2, a.bottom);
     }
     function bodyParas(d) {
         var out = [], i, ids = d.text.id, ens = d.text.en, n = Math.max(ids.length, ens.length);
@@ -581,6 +622,7 @@
         var f = tf(page, a, a.x1 + 10, y + 12, a.x2 - 10, y + 128);
         var q = d.quote;
         f.contents = dum('<qid>' + q.id + '</qid>' + BR + '<qen>' + q.en + '</qen>', d.dummy) + '\r' + q.name + BR + '<hen>' + q.role + '</hen>';
+        try { f.textFramePreferences.verticalJustification = VerticalJustification.CENTER_ALIGN; } catch (eV) { log('WARN', 'p' + d.n, 'quote not vertically centred'); }
         f.parentStory.paragraphs[0].appliedParagraphStyle = PS['kutipan'];
         f.parentStory.paragraphs[1].appliedParagraphStyle = PS['kutipan.nama'];
         if (f.overflows) { log('WARN', 'p' + d.n, 'quote overflows'); }
@@ -595,6 +637,8 @@
             y += 32;
         }
         var fr = buildTable(page, a, d.table, y, a.bottom - 6, d.table.dummyRows || [], d.n);
+        // fill the free area under a short table with a tint placeholder (photo/chart slot)
+        if (a.bottom - 8 - (y + TABLE_H + 6) >= 25) { placeholder(page, a.x1, y + TABLE_H + 6, a.x2, a.bottom - 8); }
         if (d.source) {
             var fs = tf(page, a, a.x1, a.bottom - 5, a.x2, a.bottom);
             fillText(fs, d.source, 'sumber', 'p' + d.n + ' source');
@@ -633,6 +677,7 @@
             M = plan.doc.margins; W = plan.doc.width; H = plan.doc.height; TEXTW = W - M.inside - M.outside;
             doc = app.documents.add();
             doc.insertLabel('ARSR_BUILD', 'yes');
+            doc.insertLabel('ARSR_LOGDIR', logFolder());
             BR = probeBreak(doc);
             var dp = doc.documentPreferences;
             dp.pageWidth = W; dp.pageHeight = H; dp.facingPages = plan.doc.facing; dp.pagesPerDocument = plan.doc.pageCount;
@@ -654,12 +699,15 @@
                         var page = doc.pages[d.n - 1];
                         var a = pageArea(page);
                         if (d.tipe === 'sampul') { cover(page, d); return; }
-                        if (d.tipe === 'divider') { divider(page, d); } else {
+                        if (d.tipe === 'divider') { divider(page, d); }
+                        else if (d.tipe === 'divider-kanan') { dividerRight(page, d, a); }
+                        else {
                             nav(page, a, d.chapter);
                             if (d.tipe === 'teks') { textPage(page, d, a); }
                             else if (d.tipe === 'kartu') { cardPage(page, d, a); }
                             else if (d.tipe === 'kutipan') { quotePage(page, d, a); }
                             else if (d.tipe === 'daftar-isi') { tocPage(page, d, a); }
+                            else if (d.tipe === 'catatan') { notesPage(page, d, a); }
                             else if (d.table) { tablePage(page, d, a); }
                             else { log('ERROR', 'page ' + d.n, 'unknown page type ' + d.tipe); }
                         }
@@ -668,7 +716,7 @@
             }
             // dummy register next to the plan
             safe('dummy register', function () {
-                var f = new File(Folder.desktop.fsName + '/Dummy_Register.txt'), k;
+                var f = new File(logFolder() + '/Dummy_Register.txt'), k;
                 f.encoding = 'UTF-8';
                 if (f.open('w')) {
                     for (k = 0; k < plan.dummyRegister.length; k++) { f.write(plan.dummyRegister[k].page + '\t' + plan.dummyRegister[k].what + '\n'); }

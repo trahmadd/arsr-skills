@@ -1,6 +1,6 @@
 # Validation rules (ids reported in the log)
 
-The validator is read-only. It writes one log file to the Desktop (`ARSR_Validate_Log.txt`). First line: `ERROR n | WARN n | pages n`. Fix errors from the top, rerun after every fix.
+The validator is read-only. It writes one log file to `<project>/logs/` (`ARSR_Validate_Log.txt`). First line: `ERROR n | WARN n | pages n`. Fix errors from the top, rerun after every fix.
 
 Status: **R2** = implemented now (Python). **R3** = planned (InDesign QA script).
 
@@ -25,7 +25,12 @@ Status: **R2** = implemented now (Python). **R3** = planned (InDesign QA script)
 | STR-08 | `berjalan`, `periode`, `lebar` consistent with the table | error |
 | STR-09 | `topik` id exists in config TOPIK | error |
 | STR-11 | Unknown key on a page | warning |
+| STR-13 | Dividers: `divider-kanan` only with config `divider: 2` and right after a `divider`; with `divider: 2` a `divider` starts on an even page and is followed by `divider-kanan` | error |
+| STR-20 | Report type (`jenis`): every `wajib: ya` chapter of `structures/<type>.md` exists in config BAB | error |
+| STR-21 | Report type: every page type under `HALAMAN-WAJIB` of the structure file appears (for example `indeks-gri` for LK) | error |
 | STR-12 | A line that cannot be parsed | error |
+
+Report type: for `jenis: LT` the GRI and POJK 51 rules are skipped; SEOJK rules are skipped for `LK`.
 
 ## Numbers (R2)
 

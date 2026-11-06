@@ -11,7 +11,7 @@ InDesign runs ExtendScript = JavaScript ES3 + an InDesign DOM. Python cannot run
 
 1. ES3 only: `var`, `function`, no `let`/`const`, no arrow functions, no template strings, no trailing commas, no `JSON`, no `forEach/map/filter/indexOf` on arrays, no `Object.keys`, no `String.trim`.
 2. ASCII only in code and comments. Write non-ASCII as `²`. Read data files with `file.encoding = 'UTF-8'`.
-3. Wrap each item in `try/catch` (use `safe(where, fn)`); one bad item must not stop the build. Log to Desktop.
+3. Wrap each item in `try/catch` (use `safe(where, fn)`); one bad item must not stop the build. Log to `<project>/logs/`.
 4. Never edit the document in a QA script. Read only.
 5. Run `python tools/jsx_lint.py engine/jsx` after every edit. Run `python -m unittest discover -s tests` (includes a Node mock build).
 
@@ -49,6 +49,6 @@ More detail and failure table: `references/pitfalls.md`.
 
 ## Error handling workflow
 
-1. Run the script. Open the Desktop log. Take the FIRST ERROR line (rule | where | message).
+1. Run the script. Open the log in `<project>/logs/`. Take the FIRST ERROR line (rule | where | message).
 2. Fix only that cause. Re-run lint + tests + InDesign. One change, one check.
 3. If a property name or enum is rejected, search the InDesign scripting reference, change that one line, and note it in `references/pitfalls.md`.

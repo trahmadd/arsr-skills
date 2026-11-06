@@ -18,6 +18,7 @@ berdiri: 1998
 
 ukuran: A4
 facing: ya
+divider: 2
 bleed-mm: 3
 jumlah-halaman: 80
 margin-atas-mm: 20

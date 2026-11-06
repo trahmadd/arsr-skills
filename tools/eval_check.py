@@ -58,7 +58,7 @@ def hashes():
 def seed(task, out):
     if task == 'E2':
         dummy.generate(os.path.join(ROOT, 'templates', 'dummy-company'), out)
-        f = os.path.join(out, 'data', '04_ekonomi.md')
+        f = os.path.join(out, 'data', '06_keberlanjutan.md')
         t = rd(f)
         t = t.replace('gri: ', 'gri: 999-9, ', 1)                 # unknown GRI code
         t = re.sub(r'(?m)^(isi\.en: ).*$', r'\1[isi]', t, count=1)   # forbidden placeholder

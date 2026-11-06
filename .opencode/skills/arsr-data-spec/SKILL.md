@@ -42,4 +42,4 @@ dummy: ya
 
 1. Open the nearest example block in a generated dummy project (`python engine/run.py dummy <folder>`) and copy its key order.
 2. Fill one page at a time. Keep ID and EN meaning equal.
-3. After each chapter file run `python engine/run.py validate <project_dir>` and fix errors from the top of the Desktop log `ARSR_Validate_Log.txt`.
+3. After each chapter file run `python engine/run.py validate <project_dir>` and fix errors from the top of the log `<project>/logs/ARSR_Validate_Log.txt`.

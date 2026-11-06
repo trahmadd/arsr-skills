@@ -1,7 +1,7 @@
 #target indesign
 /*
  * qa_document.jsx - ARSR read-only QA of the ACTIVE InDesign document (ExtendScript ES3, ASCII only).
- * Changes nothing in the document. Writes only Desktop/ARSR_QA_Log.txt.
+ * Changes nothing in the document. Writes only ARSR_QA_Log.txt (in the project logs folder; Desktop if unknown).
  * Checks (ids match references/validation-rules.md):
  *  DOC-01 visible tag <..>      DOC-02 empty text frame      DOC-03 overflow (frame or table)
  *  DOC-04 forbidden text        DOC-05 page count = plan     DOC-06 header cell without tag
@@ -115,7 +115,12 @@
 
     var oldFind = null;
     try { run(); } catch (e) { log('ERROR', 'QA-00', 'fatal', String(e.message || e) + ' (line ' + e.line + ')'); }
-    var f = new File(Folder.desktop.fsName + '/ARSR_QA_Log.txt');
+    var logDir = Folder.desktop.fsName;
+    try {
+        var lb = app.activeDocument.extractLabel('ARSR_LOGDIR');
+        if (lb) { var lf = new Folder(lb); if (!lf.exists) { lf.create(); } if (lf.exists) { logDir = lf.fsName; } }
+    } catch (eL) { }
+    var f = new File(logDir + '/ARSR_QA_Log.txt');
     f.encoding = 'UTF-8';
     if (f.open('w')) { f.write('ERROR ' + NERR + ' | WARN ' + NWARN + ' | qa_document.jsx\n' + LOG.join('\n') + '\n'); f.close(); }
 })();
